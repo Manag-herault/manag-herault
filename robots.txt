@@ -1,0 +1,36 @@
+# Boussole Manag'Hérault — MTAM, Département de l'Hérault
+# Page destinée aux seuls encadrants de la collectivité, atteignable depuis Intra34.
+# Aucune indexation souhaitée, par aucun moteur ni aucun aspirateur de contenu.
+
+User-agent: *
+Disallow: /
+
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
