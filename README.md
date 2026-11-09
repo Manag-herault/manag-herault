@@ -50,7 +50,7 @@ Si un besoin réel de confidentialité apparaît, il faut changer d'hébergement
 3. **Enregistrer sous → CSV UTF-8 (délimité par points-virgules)**.
 4. Redéposer le fichier au même endroit. La page se met à jour au prochain chargement.
 
-Aucune ligne de code n'est à toucher. Une valeur inconnue dans `modalite`, `effort`, `axe` ou `type_lien` ne casse pas la page : elle bascule sur une valeur par défaut.
+Aucune ligne de code n'est à toucher. Une valeur inconnue dans `modalite`, `axe` ou `type_lien` ne casse pas la page : elle bascule sur une valeur par défaut.
 
 ## Les colonnes
 
@@ -59,13 +59,32 @@ Aucune ligne de code n'est à toucher. Une valeur inconnue dans `modalite`, `eff
 | `id` | identifiant unique, sert aux liens directs vers une fiche | texte sans espace |
 | `titre` | intitulé affiché | texte libre — **obligatoire** |
 | `modalite` | pastille de couleur | `formation` · `atelier` · `guide` · `lundirh` · `outil` · `ressource` |
-| `effort` | filtre « Effort demandé » | `lire` · `animer` · `participer` · `former` · `accompagne` |
-| `disponibilite` | mention sous la fiche | `immediat` · `session` |
+| `date` | dates des sessions — alimente le calendrier | une ou plusieurs dates, `à venir`, ou vide |
 | `axe` | étiquette d'axe | `A1` · `A2` · `A3` · `A1+A2` · `A1+A3` · `TR` |
 | `thematiques` | une ou plusieurs, séparées par ` \| ` | texte libre — l'ordre d'apparition dans le fichier fixe l'ordre du filtre |
 | `elearning` | badge « e-learning » | `oui` ou vide |
 | `lien` | adresse de la ressource | URL complète, ou vide |
 | `type_lien` | libellé du bouton | `direct` · `inscription` · `plateforme` · `generique` — vide si pas de lien |
+
+## La colonne `date`
+
+C'est elle qui alimente l'onglet « Le calendrier ». Trois cas, et trois seulement :
+
+| Ce que vous écrivez | Ce que fait la page |
+|---|---|
+| une ou plusieurs dates | la session apparaît au calendrier, et la date s'affiche sur la fiche |
+| `à venir` | la fiche apparaît sous « Programmation en cours », sans date |
+| *rien* | la ressource est accessible en permanence : elle ne figure **pas** au calendrier |
+
+**Vous n'avez donc rien à faire pour exclure un guide, un outil ou un e-learning du calendrier** : laissez la cellule vide, c'est tout.
+
+**Les deux écritures de date sont acceptées** : `2027-03-09` et `09/03/2027`. Excel réécrit spontanément la première en la seconde, ce n'est pas un problème. En revanche `T3 2027`, `mars` ou `à confirmer` sont refusés par le contrôle : un calendrier doit pouvoir trier, et ces formes ne se trient pas. Si la date n'est pas arrêtée, écrivez `à venir`.
+
+**Plusieurs sessions** se séparent par une barre verticale, comme les thématiques : `2027-03-09 | 2027-06-15` donne deux entrées au calendrier.
+
+**Une session de plusieurs jours** s'écrit en listant ses jours : `2027-03-09 | 2027-03-10` s'affiche « 9 et 10 mars 2027 », en une seule entrée. Les jours consécutifs d'une même fiche sont toujours regroupés — si, par exception, vous avez deux sessions distinctes sur deux jours qui se suivent, signalez-le, la page les fusionnerait à tort.
+
+Le calendrier n'affiche que les sessions à venir ; les sessions passées restent accessibles par un bouton, en bas de page.
 
 ## Les axes
 
@@ -80,4 +99,4 @@ Aucune ligne de code n'est à toucher. Une valeur inconnue dans `modalite`, `eff
 
 ## Les six raccourcis « Je… »
 
-Ils sont définis dans `index.html` et pointent vers des **libellés de thématiques**. Si vous renommez une thématique dans le CSV, prévenez : le raccourci correspondant doit être mis à jour dans la page.
+Cinq d'entre eux sont définis dans `index.html` et pointent vers des **libellés de thématiques** : si vous renommez une thématique dans le CSV, prévenez, le raccourci correspondant doit être mis à jour dans la page. Le sixième, « Je me forme », pointe vers la modalité `formation`.
