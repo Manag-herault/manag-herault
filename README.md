@@ -10,6 +10,7 @@ Le catalogue en ligne de l'offre d'accompagnement des managers du Département d
 | `offre.csv` | Le catalogue : une ligne par fiche. **Extrait du classeur de pilotage de la MTAM, jamais modifié à la main.** | produit par extraction |
 | `parametres.csv` | Adresse du bouton « Ouvrir NEEVA » du bandeau d'inscription. Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
 | `robots.txt` | Interdiction d'indexation, à la racine du site | non |
+| `fonts/` | Police Montserrat hébergée avec le site (licence libre SIL OFL, `fonts/OFL.txt`) : la page ne fait appel à aucun service tiers | non |
 | `outils/` | Extraction du CSV, contrôle avant mise en ligne, démonstration hors ligne, convertisseur sans installation | à chaque changement de schéma |
 
 `index.html` et `offre.csv` doivent être **déposés côte à côte** et servis par un serveur web. Ouverte directement depuis le disque, la page ne peut pas lire le CSV.

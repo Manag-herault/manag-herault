@@ -58,6 +58,16 @@ def main():
            "try{\n  boot(parseCSV(document.getElementById(\"offre-embarquee\").textContent));\n"
            "}catch(e){ fail(String(e.message || e)); } }" + src[m.end():])
 
+    # Police : les fichiers fonts/*.woff2 sont embarqués, sinon la démonstration
+    # ouverte hors du site retomberait sur une police système.
+    import base64
+    def embarquer(m):
+        f = p_html.parent / m.group(1)
+        if not f.exists():
+            erreur(f"police {m.group(1)} introuvable à côté d'index.html.", "lancer le script depuis une copie complète du dépôt.")
+        return "url(data:font/woff2;base64," + base64.b64encode(f.read_bytes()).decode("ascii") + ")"
+    src = re.sub(r"url\((fonts/[a-z0-9-]+\.woff2)\)", embarquer, src)
+
     bandeau = (f"<!-- DÉMO générée le {jour} — NE PAS DÉPOSER DANS LE DÉPÔT -->\n"
         '<div style="background:#231f20;color:#fff;font:500 12px/1.4 Montserrat,system-ui,sans-serif;'
         'padding:7px 24px;text-align:center;letter-spacing:.02em">'

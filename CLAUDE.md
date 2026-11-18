@@ -29,6 +29,7 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 | `outils/controle_csv.py` | Contrôle avant mise en ligne — **point d'entrée de toute mise à jour** |
 | `outils/convertisseur.html` | Classeur → `offre.csv` + contrôle, page autonome hors ligne (SheetJS embarqué), pour travailler sans Python ni Claude. Transposition de `extraire_catalogue.py` et `controle_csv.py` : toute règle modifiée dans l'un se reporte dans l'autre. Équivalence vérifiée octet à octet le 17/11/2026 |
 | `outils/construire_demo.py` | Démonstration autonome, ouvrable par double-clic — **jamais déposée ici** |
+| `fonts/` | Montserrat, latin et latin-ext, graisses 300 à 900, licence SIL OFL (`fonts/OFL.txt`). Hébergée ici depuis le 18/11/2026 |
 | `robots.txt`, `README.md`, `CLAUDE.md` | Indexation, mode d'emploi, ce fichier |
 
 Cycle : modifier le classeur → extraire → contrôler → déposer → vérifier la page avec `?src=intra34`.
@@ -118,7 +119,7 @@ Design system « CD34 Formation ». Prune `#C0116F` (blanc dessus) · vert d'eau
 | #Managers | prune 10 %, texte prune |
 | Autres | blanc |
 
-Angles droits, sans ombre ni dégradé · Montserrat · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
+Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` — **ne jamais rétablir Google Fonts**, qui transmet à Google l'adresse IP de chaque manager · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
 
 ## 8. Le filtrage d'accès — et comment tester
 
@@ -130,7 +131,7 @@ La clé de mémorisation s'appelle toujours `mh-boussole-acces` : la renommer re
 
 1. **Fuseau horaire.** `jourSuivant` calcule en `Date.UTC` ; les dates se comparent en texte `AAAA-MM-JJ`. Ne pas « simplifier ».
 2. **BOM et point-virgule** : lire et écrire en les conservant.
-3. **Ancres de la démonstration** : `outils/construire_demo.py` repère `var ok = autorise();` et `fetch("offre.csv" … .catch(…);`. Si la page change à ces endroits, corriger le script — jamais la page pour faire passer la démonstration.
+3. **Ancres de la démonstration** : `outils/construire_demo.py` repère `var ok = autorise();` et `fetch("offre.csv" … .catch(…);`, et embarque les polices appelées par `url(fonts/….woff2)`. Si la page change à ces endroits, corriger le script — jamais la page pour faire passer la démonstration.
 4. **`intra34.herault.fr` interdit l'accès automatisé.** Les liens du catalogue n'ont jamais été testés autrement qu'en vraisemblance. Ne pas contourner ; ne pas présenter ce contrôle comme une validation.
 5. **Délai de publication** : une à deux minutes après un commit.
 6. **Dates écrites en texte dans le classeur** : l'extraction les lit jour/mois/année. Une vraie date Excel ne pose aucune question.
