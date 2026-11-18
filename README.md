@@ -8,6 +8,7 @@ Le catalogue en ligne de l'offre d'accompagnement des managers du Département d
 |---|---|---|
 | `index.html` | La page : recherche, filtres, classement, calendrier, filtrage d'accès. Ne contient aucune donnée. | personne, sauf évolution décidée |
 | `offre.csv` | Le catalogue : une ligne par fiche. **Extrait du classeur de pilotage de la MTAM, jamais modifié à la main.** | produit par extraction |
+| `parametres.csv` | Adresses des boutons du bandeau NEEVA (« Ouvrir NEEVA », « Voir le tuto »). Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
 | `robots.txt` | Interdiction d'indexation, à la racine du site | non |
 | `outils/` | Extraction du CSV, contrôle avant mise en ligne, démonstration hors ligne, convertisseur sans installation | à chaque changement de schéma |
 
@@ -67,7 +68,7 @@ Séparateur point-virgule, encodage UTF-8 avec BOM.
 
 ### Les douze modalités
 
-Formation · Formation e-learning · Parcours Hérault Managers · Atelier de co-construction de solutions · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres.
+Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres.
 
 Même liste, même orthographe que la feuille Listes du classeur. Une modalité sans fiche n'apparaît pas dans la page. La charte du Département ne compte que six couleurs complémentaires : la couleur désigne la famille, le pictogramme et le libellé désignent la modalité.
 

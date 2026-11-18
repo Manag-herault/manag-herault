@@ -24,6 +24,7 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 |---|---|
 | `offre.csv` | Le catalogue, dix colonnes, une ligne par fiche |
 | `index.html` | La page |
+| `parametres.csv` | `cle;valeur;usage` — adresses du bandeau NEEVA (`neeva_ouvrir`, `neeva_tuto`), sorties de la page le 18/11/2026 parce qu'elles évoluent. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
 | `outils/extraire_catalogue.py` | Classeur → `offre.csv` (colonnes repérées par leur en-tête) |
 | `outils/controle_csv.py` | Contrôle avant mise en ligne — **point d'entrée de toute mise à jour** |
 | `outils/convertisseur.html` | Classeur → `offre.csv` + contrôle, page autonome hors ligne (SheetJS embarqué), pour travailler sans Python ni Claude. Transposition de `extraire_catalogue.py` et `controle_csv.py` : toute règle modifiée dans l'un se reporte dans l'autre. Équivalence vérifiée octet à octet le 17/11/2026 |
@@ -40,7 +41,7 @@ Point-virgule, UTF-8 avec BOM, dix colonnes dans cet ordre :
 id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
 ```
 
-- `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier de co-construction de solutions · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
+- `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
 - `axe` — `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse`.
 - `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-huit libellés.
 - `type_lien` — `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` · vide.
@@ -108,7 +109,7 @@ Design system « CD34 Formation ». Prune `#C0116F` (blanc dessus) · vert d'eau
 | Formation | cyan |
 | Formation e-learning | blanc, bandeau cyan |
 | Parcours Hérault Managers | cyan, bandeau noir |
-| Atelier de co-construction de solutions | rose |
+| Atelier d'échange de pratiques | rose |
 | Guide / fiche boussole | vert |
 | Lundi RH | orange |
 | Outil'thèque | jaune |
