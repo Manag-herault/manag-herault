@@ -8,7 +8,7 @@ Le catalogue en ligne de l'offre d'accompagnement des managers du Département d
 |---|---|---|
 | `index.html` | La page : recherche, filtres, classement, calendrier, filtrage d'accès. Ne contient aucune donnée. | personne, sauf évolution décidée |
 | `offre.csv` | Le catalogue : une ligne par fiche. **Extrait du classeur de pilotage de la MTAM, jamais modifié à la main.** | produit par extraction |
-| `parametres.csv` | Adresses des boutons du bandeau NEEVA (« Ouvrir NEEVA », « Voir le tuto »). Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
+| `parametres.csv` | Adresse du bouton « Ouvrir NEEVA » du bandeau d'inscription. Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
 | `robots.txt` | Interdiction d'indexation, à la racine du site | non |
 | `outils/` | Extraction du CSV, contrôle avant mise en ligne, démonstration hors ligne, convertisseur sans installation | à chaque changement de schéma |
 
@@ -62,7 +62,7 @@ Séparateur point-virgule, encodage UTF-8 avec BOM.
 | `axe` | étiquette d'axe | `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse` |
 | `thematiques` | thématique de l'action (une seule) | l'un des dix-huit libellés |
 | `lien` | adresse de la ressource | URL en https, ou vide |
-| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` — vide si pas de lien |
+| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` — vide si pas de lien ; « directe », saisi dans le classeur, est écrit `direct` |
 | `nouveau` | mention « *nouveau » | `oui` ou vide |
 | `presentation` | présentation courte affichée sur la fiche | 300 caractères au plus, ou vide |
 

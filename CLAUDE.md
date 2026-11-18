@@ -24,7 +24,7 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 |---|---|
 | `offre.csv` | Le catalogue, dix colonnes, une ligne par fiche |
 | `index.html` | La page |
-| `parametres.csv` | `cle;valeur;usage` — adresses du bandeau NEEVA (`neeva_ouvrir`, `neeva_tuto`), sorties de la page le 18/11/2026 parce qu'elles évoluent. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
+| `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026. Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
 | `outils/extraire_catalogue.py` | Classeur → `offre.csv` (colonnes repérées par leur en-tête) |
 | `outils/controle_csv.py` | Contrôle avant mise en ligne — **point d'entrée de toute mise à jour** |
 | `outils/convertisseur.html` | Classeur → `offre.csv` + contrôle, page autonome hors ligne (SheetJS embarqué), pour travailler sans Python ni Claude. Transposition de `extraire_catalogue.py` et `controle_csv.py` : toute règle modifiée dans l'un se reporte dans l'autre. Équivalence vérifiée octet à octet le 17/11/2026 |
@@ -44,7 +44,7 @@ id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
 - `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
 - `axe` — `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse`.
 - `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-huit libellés.
-- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` · vide.
+- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` · vide. Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
 - `nouveau` — `oui` si « Type projet » vaut « Nouveaux projets » ; affiché « *nouveau », sans toucher au titre.
 - `presentation` — 300 caractères au plus. **Textes repris des sources de la MTAM : ne jamais en rédiger.**
 - `date` — dates séparées par ` | `, `à venir`, ou vide (accès permanent, donc hors calendrier).
