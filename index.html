@@ -298,6 +298,30 @@ a{color:var(--prune)}
 .vues button:hover{color:var(--noir)}
 .vues button[aria-selected=true]{color:var(--prune);border-bottom-color:var(--prune)}
 
+/* ───────────── pages de présentation : mot d'accueil, trois axes ───────────── */
+.pres-page{padding:26px 0 40px}
+.mot{max-width:72ch;border-left:5px solid var(--prune);padding:4px 0 4px 24px}
+.mot h2{font-size:22px;margin-bottom:16px}
+.mot p{margin:0 0 14px;line-height:1.6}
+.mot-axes{margin:0 0 14px;padding-left:20px;font-weight:700;line-height:1.6}
+.mot-axes a{color:var(--noir)}
+.axes-tete{margin-top:40px}
+.axe-carte{scroll-margin-top:16px}
+.mot-sign{margin-top:22px!important;color:var(--prune)}
+.mot-suite{margin-top:26px!important;display:flex;flex-wrap:wrap;gap:10px}
+.axes-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.axe-carte{border:1px solid var(--trait);border-top:5px solid var(--prune);padding:20px 22px;display:flex;flex-direction:column}
+.axe-num{margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--prune)}
+.axe-carte h3{font-size:18px;margin:0 0 14px;line-height:1.3}
+.axe-fin{background:var(--prune-10);padding:12px 14px;margin:0 0 16px;font-size:14px;line-height:1.5}
+.axe-fin strong{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--prune);margin-bottom:4px}
+.axe-carte h4{font-size:13px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;color:var(--gris)}
+.axe-carte ul{margin:0 0 18px;padding-left:18px;font-size:14px;line-height:1.5}
+.axe-carte li{margin-bottom:6px}
+.axe-voir{margin-top:auto;align-self:flex-start;cursor:pointer}
+.mot-suite .go{cursor:pointer}
+@media (max-width:700px){.vues-in{overflow-x:auto}.vues button{white-space:nowrap;padding:14px 14px}}
+
 /* ───────────── vue calendrier ───────────── */
 .cal{padding:26px 0 40px}
 .cal-head{margin-bottom:26px}
@@ -389,6 +413,7 @@ a{color:var(--prune)}
   <div class="wrap vues-in" role="tablist">
     <button type="button" id="v-cat" role="tab" aria-selected="true">Les ressources</button>
     <button type="button" id="v-cal" role="tab" aria-selected="false">Le calendrier</button>
+    <button type="button" id="v-pres" role="tab" aria-selected="false">Présentation par le DGS</button>
   </div>
 </nav>
 
@@ -423,6 +448,68 @@ a{color:var(--prune)}
     <p id="cal-intro"></p>
   </div>
   <div id="cal-corps"></div>
+</section>
+
+<section class="wrap pres-page" id="vue-pres" hidden aria-labelledby="mot-titre">
+  <div class="mot">
+    <h2 id="mot-titre">Mot d'accueil du Directeur général des services</h2>
+    <p>L'année 2027 s'ouvre dans un contexte exigeant qui nous engage à réinterroger nos pratiques et à simplifier nos organisations. Cette situation est aussi une opportunité : celle de renforcer notre agilité, notre efficience et notre capacité collective à innover, pour continuer à assurer un service public de qualité.</p>
+    <p>Avec Manag'Hérault 2027, nous vous proposons un accompagnement managérial construit autour de trois axes :</p>
+    <ul class="mot-axes">
+      <li><a href="#axe-1">Renforcer un management humain et préventif</a></li>
+      <li><a href="#axe-2">Adapter les pratiques managériales aux transformations de la collectivité</a></li>
+      <li><a href="#axe-3">Accompagner les managers dans l'exercice de leurs responsabilités</a></li>
+    </ul>
+    <p>Manag'Hérault s'inscrit dans une dynamique collective qui fait de chaque manager un acteur clé de l'adaptation aux transitions écologique, numérique et sociale. Les actions proposées s'appuient sur nos Couleurs managériales et sur nos valeurs de bienveillance, confiance, respect, responsabilité, efficience et agilité – qui guident chaque manager au quotidien.</p>
+    <p>Je vous invite donc à vous emparer pleinement de cette offre, à vous l'approprier et à la faire vivre, au service de vos équipes et, plus largement, au service de l'intérêt général.</p>
+    <p class="mot-sign"><strong>Dominique Jaumard</strong><br>Directeur général des services</p>
+  </div>
+
+  <div class="cal-head axes-tete">
+    <h2 id="axes-titre">Les 3 axes de Manag'Hérault</h2>
+    <p>Chaque ressource du catalogue est rattachée à un ou plusieurs axes. Pour chacun : sa finalité, ses objectifs, et l'accès direct aux ressources correspondantes.</p>
+  </div>
+  <div class="axes-grille">
+    <article class="axe-carte" id="axe-1" data-axe="1">
+      <p class="axe-num">Axe 1</p>
+      <h3>Renforcer un management humain et préventif</h3>
+      <p class="axe-fin"><strong>Finalité</strong> Promouvoir un management qui favorise la qualité de vie au travail, la prévention des risques, la confiance et l'engagement des équipes.</p>
+      <h4>Objectifs</h4>
+      <ul>
+        <li>Développer une posture managériale conciliant la qualité de vie et les relations de travail avec les nécessités du service public</li>
+        <li>Accompagner les managers dans la gestion des situations sensibles et la prévention des tensions</li>
+        <li>Favoriser la coopération, le dialogue et l'intelligence collective au sein des équipes</li>
+      </ul>
+      <button type="button" class="go go-direct axe-voir" data-axe="1"></button>
+    </article>
+    <article class="axe-carte" id="axe-2" data-axe="2">
+      <p class="axe-num">Axe 2</p>
+      <h3>Adapter les pratiques managériales aux transformations de la collectivité</h3>
+      <p class="axe-fin"><strong>Finalité</strong> Permettre aux managers de conduire les évolutions de l'organisation dans un contexte de contraintes, en développant des pratiques simples, efficientes et collaboratives.</p>
+      <h4>Objectifs</h4>
+      <ul>
+        <li>Accompagner les managers dans la conduite des transformations</li>
+        <li>Encourager la simplification des pratiques et la recherche de solutions coconstruites</li>
+        <li>Développer des modes de fonctionnement favorisant la mutualisation et l'efficience</li>
+        <li>Accompagner les transitions numérique, écologique et sociétale dans les pratiques managériales</li>
+      </ul>
+      <button type="button" class="go go-direct axe-voir" data-axe="2"></button>
+    </article>
+    <article class="axe-carte" id="axe-3" data-axe="3">
+      <p class="axe-num">Axe 3</p>
+      <h3>Accompagner les managers dans l'exercice de leurs responsabilités</h3>
+      <p class="axe-fin"><strong>Finalité</strong> Soutenir les managers pour favoriser l'exercice de leurs responsabilités en développant les compétences, les repères et les outils nécessaires à l'animation des équipes et à l'accompagnement des agents.</p>
+      <h4>Objectifs</h4>
+      <ul>
+        <li>Accompagner les managers dans la prise de nouvelles fonctions</li>
+        <li>Renforcer les compétences et les outils nécessaires à l'exercice des responsabilités managériales et RH</li>
+        <li>Développer le rôle du manager dans l'accompagnement des parcours et des compétences des agents</li>
+        <li>Favoriser le partage d'expériences et le développement d'une culture managériale commune, fondée sur les couleurs managériales</li>
+      </ul>
+      <button type="button" class="go go-direct axe-voir" data-axe="3"></button>
+    </article>
+  </div>
+  <p class="mot-suite"><button type="button" class="go go-soft" data-vue="cat">Voir toutes les ressources</button></p>
 </section>
 
 <footer class="notes">
@@ -795,7 +882,7 @@ function adresse(partage){
   if(S.t.size) p.set("t",[...S.t].join("|"));
   if(S.n) p.set("n","1");
   if(S.tri !== "mod") p.set("tri",S.tri);
-  if(!$("calendrier").hidden) p.set("v","cal");
+  if(VUE !== "cat") p.set("v", VUE);
   const base = partage ? location.origin + location.pathname : location.pathname;
   return p.toString() ? base+"?"+p : base;
 }
@@ -955,21 +1042,36 @@ function majCalendrier(){
 }
 
 /* ─── bascule entre les deux vues ─────────────────────────────────────────── */
+let VUE = "cat";
+const VUES = {cat:"v-cat", cal:"v-cal", pres:"v-pres"};
 function montreVue(v, pousseUrl){
-  const cal = v === "cal";
-  document.querySelector("main.main").hidden = cal;
-  $("calendrier").hidden = !cal;
-  document.querySelector(".console").hidden = cal;
-  $("v-cat").setAttribute("aria-selected", String(!cal));
-  $("v-cal").setAttribute("aria-selected", String(cal));
-  if(cal) majCalendrier(); else mesurePres();
+  if(!VUES[v]) v = "cat";
+  VUE = v;
+  document.querySelector("main.main").hidden = v !== "cat";
+  document.querySelector(".console").hidden = v !== "cat";
+  $("calendrier").hidden = v !== "cal";
+  $("vue-pres").hidden = v !== "pres";
+  Object.keys(VUES).forEach(k => $(VUES[k]).setAttribute("aria-selected", String(k === v)));
+  if(v === "cal") majCalendrier();
+  else if(v === "pres") majAxes();
+  else if(v === "cat") mesurePres();
   if(pousseUrl){
     history.replaceState(null,"", adresse(false));
     window.scrollTo({top:0, behavior:"smooth"});
   }
 }
-$("v-cat").addEventListener("click", ()=>montreVue("cat", true));
-$("v-cal").addEventListener("click", ()=>montreVue("cal", true));
+/* nombre de ressources par axe : calculé, jamais écrit en dur */
+function majAxes(){
+  document.querySelectorAll(".axe-voir").forEach(b => {
+    const k = b.dataset.axe, n = DATA.filter(o => o.ax.includes(k)).length;
+    b.textContent = "Voir les " + n + " ressources de l'axe " + k;
+  });
+}
+document.querySelectorAll(".axe-voir").forEach(b => b.addEventListener("click", () => {
+  toutEffacer(); S.a.add(b.dataset.axe); render(); montreVue("cat", true);
+}));
+document.querySelectorAll("[data-vue]").forEach(b => b.addEventListener("click", () => montreVue(b.dataset.vue, true)));
+Object.keys(VUES).forEach(k => $(VUES[k]).addEventListener("click", () => montreVue(k, true)));
 
 /* ─── lecture de l'adresse. Les liens diffusés avant le 11 novembre 2026
    restent lisibles : axes A1/A2/A3/TR, thématiques séparées par des virgules. ─ */
@@ -988,7 +1090,7 @@ function initFromUrl(){
   S.n = p.get("n") === "1";
   if(TRIS.some(x=>x[0] === p.get("tri"))) S.tri = p.get("tri");
   $("tri").value = S.tri;
-  if(p.get("v") === "cal") montreVue("cal", false);
+  if(VUES[p.get("v")] && p.get("v") !== "cat") montreVue(p.get("v"), false);
 }
 /* Liens du bandeau NEEVA : lus dans parametres.csv (colonnes cle;valeur), pour les
    changer sans toucher à la page. Seules les adresses https sont retenues ; un bouton

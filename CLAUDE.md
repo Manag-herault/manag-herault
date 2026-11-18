@@ -78,7 +78,7 @@ Accompagner le changement et les transitions · Accompagner les moments clés de
 
 ## 6. Comment la page est construite
 
-**Deux vues** : « Les ressources » et « Le calendrier » (`?v=cal`).
+**Trois vues**, en onglets : « Les ressources », « Le calendrier » (`?v=cal`), « Présentation par le DGS » (`?v=pres`). Cette dernière (18/11/2026) reprend le mot d'accueil du DGS (millésime porté à 2027 à la demande de la MTAM ; texte antérieur aux intitulés officiels, dont les trois axes sont donc cités sous leur intitulé officiel, avec un lien vers leur carte), puis les trois axes : finalité et objectifs des diapositives 8 à 10 de la présentation validée par la DGS, et un bouton vers les ressources de l'axe, dont le nombre est calculé. Ne pas réécrire ces textes.
 
 **Vue « Les ressources »**
 
@@ -157,7 +157,6 @@ Corrigé le 11 novembre : l'erreur de script sur la page de refus ; les adresses
 | Feuille d'export par formules dans le classeur | à construire, pour extraire sans script depuis un poste du Département |
 | Programmation 2027/28 | une seule session datée à ce jour |
 | Test depuis un poste du Département | jamais fait |
-| Droit d'écriture sur ce dépôt | non accordé au compte relié à Claude : dépôt par l'interface web |
 | Hébergement sur l'intranet | la bonne cible à terme |
 
 ## 12. Manière de travailler
