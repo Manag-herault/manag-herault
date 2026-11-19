@@ -114,14 +114,16 @@ var ENTETES=[["identifiant","id"],["intitule de l'action","titre"],["axe","axe"]
  ["modalite de mise en oeuvre","mod"],["type projet","type"],["presentation courte","pres"],
  ["date de debut","debut"],["date (1re session)","debut"],["date de fin","fin"],
  ["etat d'avancement","etat"],["publier au catalogue","pub"],["lien","lien"],["type de lien","tlien"]];
-var TLIEN={"directe":"direct"}; /* synonymes de « Type de lien », comme extraire_catalogue.py */ var OBLIGATOIRES=["id","titre","axe","th","mod","type","pres","debut","etat","pub","lien","tlien"];
+var TLIEN={"directe":"direct","inscription directe":"inscription","inscription neeva":"inscription Neeva","intra34":"intra34","plateforme e-learning":"plateforme","plateforme":"plateforme"}; /* synonymes de « Type de lien », comme extraire_catalogue.py ; une valeur absente passe telle quelle */
+var ETATS=["a faire","en cours","communication","realise","suspendu","annule","deploye"]; var OBLIGATOIRES=["id","titre","axe","th","mod","type","pres","debut","etat","pub","lien","tlien"];
 
 /* ---- Vocabulaires fermés : transposition de outils/controle_csv.py ---- */
 var MOD=["Formation","Formation e-learning","Parcours Hérault Managers","Atelier d'échange de pratiques",
  "Guide / fiche boussole","Lundi RH","Lundi RH Replay","Outil'thèque","Ressources","#Managers","Webinaire","Autres"];
 var MOD_ANCIENNES={"Atelier de co-construction de solutions":"Atelier d'échange de pratiques","Atelier d'échange de pratique":"Atelier d'échange de pratiques"};
 var AXE=["1","2","3","1 et 2","1 et 3","2 et 3","Transverse"];
-var ACC=["direct","inscription","inscription Neeva","generique","plateforme",""];
+var ACC=["direct","inscription","inscription Neeva","intra34","generique","plateforme",""];
+var CONSEQ={modalite:"la fiche sera rangée sous « Autres actions »",axe:"la fiche sera classée « Transverse »",type_lien:"le bouton portera « Consulter » et le filtre Accès affichera ce libellé tel quel"}; /* une valeur hors liste ne bloque jamais */
 var THEMES=["Accompagner le changement et les transitions","Accompagner les moments clés de la vie d'une équipe",
  "Adapter ses pratiques aux nouvelles organisations du travail","Affirmer sa posture de manager",
  "Animer des réunions et des collectifs de travail","Communiquer et donner du feedback",
@@ -197,6 +199,8 @@ function extraire(lignes,premiere){
       f.pub=f.pub||cle(txt(r,"pub"))==="oui";
     }
     var etat=txt(r,"etat");f.etats.push(etat);
+    if(etat&&ETATS.indexOf(cle(etat))<0) avert.push("L"+n+" « "+f.titre+" » : état « "+etat+" » non reconnu — traité comme « En cours » (seuls « Suspendu », « Annulé » et « Déployé » changent le calendrier).");
+    if(txt(r,"pub")&&["oui","non"].indexOf(cle(txt(r,"pub")))<0) avert.push("L"+n+" « "+f.titre+" » : « Publier au catalogue » = « "+txt(r,"pub")+" » — seul « Oui » publie.");
     var d,fin;
     try{d=enDate(val(r,"debut"));fin=enDate(val(r,"fin"));}
     catch(e){E.push("L"+n+" « "+f.titre+" » : date illisible « "+e+" ».");continue;}
@@ -213,7 +217,7 @@ function extraire(lignes,premiere){
     if(ds.length) date=ds.join(" | ");
     else if(f.etats.length&&f.etats.every(function(e){return cle(e)==="deploye";})) date="";
     else date="à venir";
-    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[f.tlien]||f.tlien),cle(f.type)==="nouveaux projets"?"oui":"",f.pres]});
+    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[cle(f.tlien)]||f.tlien),cle(f.type).indexOf("nouveau")===0?"oui":"",f.pres]});
   });
   return {E:E,avert:avert,rangs:rangs,nFiches:ordre.length,nLignes:lignes.length-1};
 }
@@ -273,7 +277,7 @@ function controle(rangs,ancien){
     if(nb(tits,d.titre.toLowerCase())>1) A.push(L+" : titre en double.");
     if(d.modalite in MOD_ANCIENNES) A.push(L+" : modalité « "+d.modalite+" », renommée « "+MOD_ANCIENNES[d.modalite]+" » dans la liste du classeur. La page la range sous la nouvelle rubrique ; corriger la cellule du classeur.");
     [["modalite",MOD.concat(Object.keys(MOD_ANCIENNES))],["axe",AXE],["type_lien",ACC]].forEach(function(p){
-      if(p[1].indexOf(d[p[0]])<0) E.push(L+" : "+p[0]+" = « "+d[p[0]]+" » inconnu (valeurs admises : "+p[1].filter(Boolean).join(" · ")+").");
+      if(p[1].indexOf(d[p[0]])<0) A.push(L+" : "+p[0]+" = « "+d[p[0]]+" » non reconnu : "+CONSEQ[p[0]]+". Valeurs connues : "+p[1].filter(Boolean).join(" · ")+". Si c'est un nouveau libellé voulu, le déclarer dans les outils.");
     });
     if(["#Managers","Webinaire","Autres"].indexOf(d.modalite)>=0) A.push(L+" : modalité « "+d.modalite+" » — elle devient une rubrique visible du catalogue. Confirmer ou requalifier.");
     if(d.nouveau!==""&&d.nouveau!=="oui") E.push(L+" : nouveau = « "+d.nouveau+" » (attendu : oui ou vide).");
@@ -298,12 +302,12 @@ function controle(rangs,ancien){
   });
   Object.keys(SITUATIONS).forEach(function(s){
     var ths=SITUATIONS[s];
-    if(!ths.some(function(t){return t in themesN;})) E.push("Bouton « "+s+" » : aucune de ses thématiques n'est portée par une fiche — il ne renverrait rien.");
+    if(!ths.some(function(t){return t in themesN;})) A.push("Bouton « "+s+" » : aucune de ses thématiques n'est portée par une fiche — il ne renverrait rien.");
     ths.forEach(function(t){if(!(t in themesN)) A.push("Bouton « "+s+" » : la thématique « "+t+" » n'est portée par aucune fiche.");});
   });
   var simp=function(s){return s.normalize("NFD").replace(/[^\x00-\x7F]/g,"").toLowerCase().replace(/\W/g,"");},vus={};
   themes.forEach(function(t){
-    if(simp(t) in vus) E.push("Thématiques quasi identiques : « "+vus[simp(t)]+" » et « "+t+" » : deux filtres au lieu d'un.");
+    if(simp(t) in vus) A.push("Thématiques quasi identiques : « "+vus[simp(t)]+" » et « "+t+" » : deux filtres au lieu d'un.");
     else vus[simp(t)]=t;
   });
   var liens=data.filter(function(d){return d.lien;}).length;

@@ -45,7 +45,7 @@ id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
 - `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
 - `axe` — `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse`.
 - `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-huit libellés.
-- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` · vide. Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
+- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `generique` · vide. Synonymes du classeur (table `TLIEN`) : « directe » → `direct`, « Inscription directe » → `inscription`, « Intra34 » → `intra34`, « Plateforme e-learning » → `plateforme`. **Toute autre valeur passe telle quelle** : la page crée un type d'accès à son nom, bouton « Consulter ». Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
 - `nouveau` — `oui` si « Type projet » vaut « Nouveaux projets » ; affiché « *nouveau », sans toucher au titre.
 - `presentation` — 300 caractères au plus. **Textes repris des sources de la MTAM : ne jamais en rédiger.**
 - `date` — dates séparées par ` | `, `à venir`, ou vide (accès permanent, donc hors calendrier).
@@ -53,6 +53,8 @@ id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
 Colonnes supprimées, à ne pas rétablir : `effort`, `disponibilite` (8 novembre), `elearning` (11 novembre, devenue une modalité).
 
 **Toute colonne hors schéma est une erreur bloquante** : c'est le garde-fou contre la sortie d'une colonne interne du classeur.
+
+**Une valeur de liste renommée dans le classeur ne bloque jamais** (règle du 19/11/2026, pour que la MTAM puisse faire évoluer ses listes sans casser la mise à jour). Modalité inconnue → rubrique « Autres actions » ; axe illisible → « Transverse » ; type de lien inconnu → bouton « Consulter » à son nom ; « Type projet » commençant par « Nouveau » → nouveauté ; état d'avancement inconnu → traité comme « En cours ». Chaque cas produit un **avertissement** explicite. Restent bloquants : colonnes manquantes ou hors schéma, identifiant vide, mal formé ou en double, titre vide, lien non https, date illisible.
 
 ### Règles d'extraction
 

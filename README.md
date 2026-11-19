@@ -48,7 +48,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 3. Contrôler : `python3 outils/controle_csv.py offre.csv ancien-offre.csv` — aucune erreur bloquante ne doit rester ; une erreur se corrige dans le classeur, puis on extrait à nouveau.
 4. Déposer `offre.csv` au même endroit. La page se met à jour au prochain chargement.
 
-Une valeur inconnue ne casse pas la page : une modalité inconnue est rangée sous « Autres actions », un axe illisible sous « Transverse ».
+Une valeur de liste renommée dans le classeur ne bloque ni le convertisseur ni la page : une modalité inconnue est rangée sous « Autres actions », un axe illisible sous « Transverse », un type de lien inconnu reçoit un bouton « Consulter » à son nom. Le convertisseur le signale par un avertissement. Seuls bloquent : une colonne manquante, un identifiant vide ou en double, un lien non https, une date illisible.
 
 ## Les dix colonnes de `offre.csv`
 

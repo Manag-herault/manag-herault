@@ -17,7 +17,11 @@ MOD = ["Formation", "Formation e-learning", "Parcours Hérault Managers", "Ateli
 # Appellations antérieures, encore lues par la page : signalées, non bloquantes.
 MOD_ANCIENNES = {"Atelier de co-construction de solutions": "Atelier d'échange de pratiques", "Atelier d'échange de pratique": "Atelier d'échange de pratiques"}
 AXE = ["1", "2", "3", "1 et 2", "1 et 3", "2 et 3", "Transverse"]
-ACC = ["direct", "inscription", "inscription Neeva", "generique", "plateforme", ""]
+ACC = ["direct", "inscription", "inscription Neeva", "intra34", "generique", "plateforme", ""]
+# Une valeur hors de ces listes ne bloque jamais : la page sait l'afficher (voir CONSEQ).
+CONSEQ = {"modalite": "la fiche sera rangée sous « Autres actions »",
+          "axe": "la fiche sera classée « Transverse »",
+          "type_lien": "le bouton portera « Consulter » et le filtre Accès affichera ce libellé tel quel"}
 THEMES = ["Accompagner le changement et les transitions", "Accompagner les moments clés de la vie d'une équipe",
   "Adapter ses pratiques aux nouvelles organisations du travail", "Affirmer sa posture de manager",
   "Animer des réunions et des collectifs de travail", "Communiquer et donner du feedback",
@@ -86,7 +90,8 @@ def main():
                      "La page la range sous la nouvelle rubrique ; corriger la cellule E du classeur.")
         for col, ok in (("modalite", MOD + list(MOD_ANCIENNES)), ("axe", AXE), ("type_lien", ACC)):
             if d.get(col, "") not in ok:
-                E.append(f"{L} : {col} = « {d.get(col)} » inconnu (valeurs admises : {' · '.join(v for v in ok if v)}).")
+                A.append(f"{L} : {col} = « {d.get(col)} » non reconnu : {CONSEQ[col]}. "
+                         f"Valeurs connues : {' · '.join(v for v in ok if v)}. Si c'est un nouveau libellé voulu, le déclarer dans les outils.")
         if d.get("modalite") in ("#Managers", "Webinaire", "Autres"):
             A.append(f"{L} : modalité « {d['modalite']} » — elle devient une rubrique visible du catalogue. Confirmer ou requalifier.")
         if d.get("nouveau", "") not in ("", "oui"): E.append(f"{L} : nouveau = « {d['nouveau']} » (attendu : oui ou vide).")
@@ -112,13 +117,13 @@ def main():
         themes.update(th)
     for sit, ths in SITUATIONS.items():
         if not any(t in themes for t in ths):
-            E.append(f"Bouton « {sit} » : aucune de ses thématiques n'est portée par une fiche — il ne renverrait rien.")
+            A.append(f"Bouton « {sit} » : aucune de ses thématiques n'est portée par une fiche — il ne renverrait rien.")
         for t in ths:
             if t not in themes: A.append(f"Bouton « {sit} » : la thématique « {t} » n'est portée par aucune fiche.")
     cle = lambda s: re.sub(r"\W", "", unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode().lower())
     vus = {}
     for t in themes:
-        if cle(t) in vus: E.append(f"Thématiques quasi identiques : « {vus[cle(t)]} » et « {t} » : deux filtres au lieu d'un.")
+        if cle(t) in vus: A.append(f"Thématiques quasi identiques : « {vus[cle(t)]} » et « {t} » : deux filtres au lieu d'un.")
         else: vus[cle(t)] = t
 
     k = Counter(d.get("type_lien") or ("direct" if d.get("lien") else "à renseigner") for d in data)

@@ -23,7 +23,11 @@ import csv, datetime, json, re, sys, unicodedata
 SORTIE = ["id", "titre", "modalite", "date", "axe", "thematiques",
           "lien", "type_lien", "nouveau", "presentation"]
 # synonymes admis dans la colonne « Type de lien » du classeur -> valeur écrite dans offre.csv
-TLIEN = {"directe": "direct"}
+# Synonymes de « Type de lien ». Une valeur absente de cette table passe telle quelle :
+# la page lui donne alors un bouton « Consulter » à son nom (rien ne bloque).
+TLIEN = {"directe": "direct", "inscription directe": "inscription", "inscription neeva": "inscription Neeva", "intra34": "intra34", "plateforme e-learning": "plateforme", "plateforme": "plateforme"}
+# Valeurs qui changent le sens d'une ligne : une valeur inconnue est signalée, jamais bloquante.
+ETATS = ("a faire", "en cours", "communication", "realise", "suspendu", "annule", "deploye")
 # en-tête du classeur (début, sans accent ni casse) -> nom interne
 ENTETES = {"identifiant": "id", "intitule de l'action": "titre", "axe": "axe",
            "thematique": "th", "modalite de mise en oeuvre": "mod",
@@ -101,6 +105,11 @@ def main():
             if not f["pres"] and txt(r, "pres"): f["pres"] = txt(r, "pres")
             f["pub"] = f["pub"] or cle(txt(r, "pub")) == "oui"
         etat = txt(r, "etat"); f["etats"].append(etat)
+        if etat and cle(etat) not in ETATS:
+            A.append(f"L{n} « {f['titre']} » : état « {etat} » non reconnu — traité comme « En cours » "
+                     "(seuls « Suspendu », « Annulé » et « Déployé » changent le calendrier).")
+        if txt(r, "pub") and cle(txt(r, "pub")) not in ("oui", "non"):
+            A.append(f"L{n} « {f['titre']} » : « Publier au catalogue » = « {txt(r, 'pub')} » — seul « Oui » publie.")
         try:
             d, fin = en_date(val(r, "debut"), ordre), en_date(val(r, "fin"), ordre)
         except ValueError as e:
@@ -119,8 +128,8 @@ def main():
         else: date = "à venir"
         if len(f["pres"]) > 300:
             A.append(f"L{f['ligne']} « {f['titre']} » : présentation de {len(f['pres'])} caractères (300 au plus).")
-        rangs.append([i, f["titre"], f["mod"], date, f["axe"], f["th"], f["lien"], TLIEN.get(f["tlien"], f["tlien"]),
-                      "oui" if cle(f["type"]) == "nouveaux projets" else "", f["pres"]])
+        rangs.append([i, f["titre"], f["mod"], date, f["axe"], f["th"], f["lien"], TLIEN.get(cle(f["tlien"]), f["tlien"]),
+                      "oui" if cle(f["type"]).startswith("nouveau") else "", f["pres"]])
 
     for x in A: print("Avertissement — " + x)
     if E:

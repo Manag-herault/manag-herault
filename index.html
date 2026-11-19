@@ -595,13 +595,22 @@ const ACC = {
   direct:{l:"Lien direct",cta:"Consulter",cls:"go-direct"},
   inscription:{l:"Inscription en ligne",cta:"S'inscrire",cls:"go-direct"},
   neeva:{l:"Inscription dans Neeva",cta:"S'inscrire dans Neeva",cls:"go-direct"},
-  plateforme:{l:"Renvoi 360Learning",cta:"Ouvrir 360Learning",cls:"go-soft"},
+  intra34:{l:"Page Intra34",cta:"Ouvrir sur Intra34",cls:"go-direct"},
+  plateforme:{l:"Plateforme e-learning",cta:"Ouvrir la plateforme",cls:"go-soft"},
   generique:{l:"Renvoi Outil'thèque",cta:"Boîte à outils",cls:"go-soft"},
   none:{l:"Lien à renseigner",cta:"Lien à renseigner",cls:"go-none"}
 };
 const accDe = (brut, lien) => { const v = norm(brut||"").trim();
   if(v === "inscription neeva" || v === "neeva") return "neeva";
-  return ACC[v] && v !== "none" ? v : (lien ? "direct" : "none"); };
+  if(v === "directe") return "direct";
+  if(v === "plateforme e-learning") return "plateforme";
+  if(ACC[v] && v !== "none") return v;
+  /* Libellé inconnu (liste renommée dans le classeur) : jamais d'erreur,
+     un type d'accès est créé à son nom, avec un bouton « Consulter ». */
+  if(v){ const k = "x-" + v.replace(/[^a-z0-9]+/g,"-");
+    if(!ACC[k]) ACC[k] = {l:String(brut).trim(), cta:"Consulter", cls:"go-direct"};
+    return k; }
+  return lien ? "direct" : "none"; };
 
 /* Les trois axes, intitulés officiels arrêtés le 6 novembre 2026 — mot pour mot. */
 const AXE = {
