@@ -109,12 +109,21 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 <script>
 "use strict";
 /* ---- Règles de conversion : transposition de outils/extraire_catalogue.py ---- */
-var SORTIE=["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation"];
+var SORTIE=["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","code_neeva","duree"];
 var ENTETES=[["identifiant","id"],["intitule de l'action","titre"],["axe","axe"],["thematique","th"],
  ["modalite de mise en oeuvre","mod"],["type projet","type"],["presentation courte","pres"],
  ["date de debut","debut"],["date (1re session)","debut"],["date de fin","fin"],
- ["etat d'avancement","etat"],["publier au catalogue","pub"],["lien","lien"],["type de lien","tlien"]];
-var TLIEN={"directe":"direct","inscription directe":"inscription","inscription neeva":"inscription Neeva","intra34":"intra34","plateforme e-learning":"plateforme","plateforme":"plateforme"}; /* synonymes de « Type de lien », comme extraire_catalogue.py ; une valeur absente passe telle quelle */
+ ["etat d'avancement","etat"],["publier au catalogue","pub"],["lien","lien"],["type de lien","tlien"],
+ ["code neeva","code"],["duree","duree"],["nombre de jours par session","jours"]];
+var PREFIXES=["presentation courte","duree","code neeva"]; /* en-têtes reconnus par leur début */
+/* Nombre de jours par session -> libellé affiché ; vide si illisible ou nul (comme jours_en_texte) */
+function joursEnTexte(v){
+  var t=String(v==null?"":v).replace(",",".").trim(),x=Number(t);
+  if(t===""||isNaN(x)||x<=0) return "";
+  if(x===0.5) return "½ journée";
+  return String(x).replace(".",",")+(x<2?" jour":" jours");
+}
+var TLIEN={"directe":"direct","inscription directe":"inscription","inscription neeva":"inscription Neeva","intra34":"intra34","plateforme e-learning":"plateforme","plateforme":"plateforme","plateforme externe":"externe","externe":"externe"}; /* synonymes de « Type de lien », comme extraire_catalogue.py ; une valeur absente passe telle quelle */
 var ETATS=["a faire","en cours","communication","realise","suspendu","annule","deploye"]; var OBLIGATOIRES=["id","titre","axe","th","mod","type","pres","debut","etat","pub","lien","tlien"];
 
 /* ---- Vocabulaires fermés : transposition de outils/controle_csv.py ---- */
@@ -122,7 +131,8 @@ var MOD=["Formation","Formation e-learning","Parcours Hérault Managers","Atelie
  "Guide / fiche boussole","Lundi RH","Lundi RH Replay","Outil'thèque","Ressources","#Managers","Webinaire","Autres"];
 var MOD_ANCIENNES={"Atelier de co-construction de solutions":"Atelier d'échange de pratiques","Atelier d'échange de pratique":"Atelier d'échange de pratiques"};
 var AXE=["1","2","3","1 et 2","1 et 3","2 et 3","Transverse"];
-var ACC=["direct","inscription","inscription Neeva","intra34","generique","plateforme",""];
+var ACC=["direct","inscription","inscription Neeva","intra34","generique","plateforme","externe",""];
+var DUREE_MAX=30;
 var CONSEQ={modalite:"la fiche sera rangée sous « Autres actions »",axe:"la fiche sera classée « Transverse »",type_lien:"le bouton portera « Consulter » et le filtre Accès affichera ce libellé tel quel"}; /* une valeur hors liste ne bloque jamais */
 var THEMES=["Accompagner le changement et les transitions","Accompagner les moments clés de la vie d'une équipe",
  "Adapter ses pratiques aux nouvelles organisations du travail","Affirmer sa posture de manager",
@@ -170,7 +180,7 @@ function extraire(lignes,premiere){
   var E=[],tete=lignes[0].map(cle),col={};
   tete.forEach(function(h,i){
     ENTETES.forEach(function(p){
-      if(h===p[0]||(p[0]==="presentation courte"&&h.indexOf(p[0])===0)) if(!(p[1] in col)) col[p[1]]=i;
+      if(h===p[0]||(PREFIXES.indexOf(p[0])>=0&&h.indexOf(p[0])===0)) if(!(p[1] in col)) col[p[1]]=i;
     });
   });
   var manq=OBLIGATOIRES.filter(function(n){return !(n in col);});
@@ -187,6 +197,7 @@ function extraire(lignes,premiere){
     if(!f){
       f=fiches[i]={id:i,titre:txt(r,"titre"),mod:txt(r,"mod"),axe:txt(r,"axe"),th:txt(r,"th"),lien:txt(r,"lien"),
         tlien:txt(r,"tlien"),type:txt(r,"type"),pres:txt(r,"pres"),pub:cle(txt(r,"pub"))==="oui",
+        code:txt(r,"code"),duree:txt(r,"duree"),jours:txt(r,"jours"),
         dates:{},etats:[],ligne:n};
       ordre.push(i);
     }else{
@@ -196,6 +207,8 @@ function extraire(lignes,premiere){
       });
       if(!f.lien&&txt(r,"lien")){f.lien=txt(r,"lien");f.tlien=txt(r,"tlien");}
       if(!f.pres&&txt(r,"pres")) f.pres=txt(r,"pres");
+      if(txt(r,"code")&&f.code&&txt(r,"code")!==f.code) avert.push("L"+n+" « "+f.titre+" » : code Neeva « "+txt(r,"code")+" » différent de la ligne "+f.ligne+" ; celui de la ligne "+f.ligne+" est retenu.");
+      ["code","duree","jours"].forEach(function(c){if(!f[c]&&txt(r,c)) f[c]=txt(r,c);});
       f.pub=f.pub||cle(txt(r,"pub"))==="oui";
     }
     var etat=txt(r,"etat");f.etats.push(etat);
@@ -217,7 +230,7 @@ function extraire(lignes,premiere){
     if(ds.length) date=ds.join(" | ");
     else if(f.etats.length&&f.etats.every(function(e){return cle(e)==="deploye";})) date="";
     else date="à venir";
-    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[cle(f.tlien)]||f.tlien),cle(f.type).indexOf("nouveau")===0?"oui":"",f.pres]});
+    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[cle(f.tlien)]||f.tlien),cle(f.type).indexOf("nouveau")===0?"oui":"",f.pres,f.code,f.duree||joursEnTexte(f.jours)]});
   });
   return {E:E,avert:avert,rangs:rangs,nFiches:ordre.length,nLignes:lignes.length-1};
 }
@@ -286,7 +299,11 @@ function controle(rangs,ancien){
     var u=d.lien,k=d.type_lien;
     if(u&&u.indexOf("https://")!==0) E.push(L+" : lien non https ou mal formé : "+u);
     if(u&&!k) A.push(L+" : lien présent mais type_lien vide (affiché « Consulter »).");
-    if(k&&!u) A.push(L+" : type_lien « "+k+" » sans lien (affiché « Lien à renseigner »).");
+    var neeva=k==="inscription Neeva";
+    if(neeva&&u) A.push(L+" : formation Neeva avec un lien ("+u+"). Neeva ne s'ouvre pas par une adresse : vider la cellule « Lien » dans le classeur. La fiche n'affiche pas ce lien.");
+    if(k&&!u&&!neeva) A.push(L+" : type_lien « "+k+" » sans lien (affiché « Lien à renseigner »).");
+    if(d.code_neeva&&!neeva) A.push(L+" : code Neeva « "+d.code_neeva+" » sur une action qui n'est pas en « Inscription Neeva » : il n'est pas affiché.");
+    if(d.duree.length>DUREE_MAX) A.push(L+" : durée de "+d.duree.length+" caractères ("+DUREE_MAX+" au plus) : « "+d.duree+" ».");
     if(k==="direct"&&/(360learning\.com|hi_2589236\/outils)\/?$/.test(u)) A.push(L+" : lien générique marqué « direct ».");
     var dt=datesCSV(d.date);
     dt.ko.forEach(function(v){E.push(L+" : date « "+v+" » illisible.");});
@@ -312,7 +329,10 @@ function controle(rangs,ancien){
   });
   var liens=data.filter(function(d){return d.lien;}).length;
   var synth={
-    fiches:data.length,liens:liens,sansLien:data.length-liens,
+    fiches:data.length,liens:liens,sansLien:data.filter(function(d){return !d.lien&&d.type_lien!=="inscription Neeva";}).length,
+    neeva:data.filter(function(d){return d.type_lien==="inscription Neeva";}).length,
+    codes:data.filter(function(d){return d.type_lien==="inscription Neeva"&&d.code_neeva;}).length,
+    durees:data.filter(function(d){return d.duree;}).length,
     types:compte(data.map(function(d){return d.type_lien||(d.lien?"direct":"à renseigner");})),
     modalites:compte(data.map(function(d){return d.modalite;})),
     axes:compte(data.map(function(d){return d.axe;})).sort(function(a,b){return a[0]<b[0]?-1:1;}),
@@ -388,14 +408,15 @@ function traiter(){
     .map(function(p){return "<div><b>"+p[1]+"</b>"+p[0]+"</div>";}).join("");
   var lis=function(l){return l.length?'<ul class="liste">'+l.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>":"<p>Aucun.</p>";};
   var h="<h2>Synthèse</h2><ul class=\"liste\">"+
-   "<li>Liens : "+s.liens+" renseignés, "+s.sansLien+" à renseigner ("+esc(aff(s.types))+")</li>"+
+   "<li>Liens : "+s.liens+" renseignés, "+s.sansLien+" à renseigner, hors Neeva ("+esc(aff(s.types))+")</li>"+
+   "<li>Formations Neeva : "+s.neeva+", dont "+s.codes+" avec un code (les autres affichent « Code Neeva communiqué prochainement ») · durées renseignées : "+s.durees+"</li>"+
    "<li>Par modalité : "+esc(aff(s.modalites))+"</li>"+
    "<li>Par axe : "+esc(aff(s.axes))+"</li>"+
    "<li>Calendrier : "+s.datees+" fiches datées (dont "+s.passees+" date(s) passée(s)), "+s.avenirs+" « à venir », "+s.permanent+" en accès permanent</li>"+
    "<li>Thématiques : "+s.nThemes+"</li></ul>";
   h+="<h2>Erreurs bloquantes ("+E.length+")</h2>"+lis(E)+"<h2>Avertissements ("+A.length+")</h2>"+lis(A);
   var md="# Contrôle du classeur → offre.csv ("+jour()+")\n\n- Classeur : "+etat.nomClasseur+"\n- Fiches publiées : "+s.fiches+" sur "+ex.nFiches+" actions\n"+
-   "- Liens : "+s.liens+" renseignés, "+s.sansLien+" à renseigner ("+aff(s.types)+")\n- Par modalité : "+aff(s.modalites)+"\n- Par axe : "+aff(s.axes)+"\n"+
+   "- Liens : "+s.liens+" renseignés, "+s.sansLien+" à renseigner, hors Neeva ("+aff(s.types)+")\n- Formations Neeva : "+s.neeva+", dont "+s.codes+" avec un code · durées renseignées : "+s.durees+"\n- Par modalité : "+aff(s.modalites)+"\n- Par axe : "+aff(s.axes)+"\n"+
    "- Calendrier : "+s.datees+" fiches datées (dont "+s.passees+" date(s) passée(s)), "+s.avenirs+" « à venir », "+s.permanent+" en accès permanent\n"+
    "\n## Erreurs bloquantes ("+E.length+")\n"+(E.length?E.map(function(x){return "- "+x;}).join("\n"):"Aucune.")+
    "\n\n## Avertissements ("+A.length+")\n"+(A.length?A.map(function(x){return "- "+x;}).join("\n"):"Aucun.")+"\n";

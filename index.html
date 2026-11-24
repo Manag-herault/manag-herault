@@ -17,7 +17,10 @@
    Trois portes d'entrée, dans cet ordre :
      1. le paramètre ?src=intra34 du lien posé sur l'intranet ;
      2. un referrer en *.herault.fr ;
-     3. une entrée valide antérieure, mémorisée sur le navigateur.
+     3. une entrée valide antérieure dans la même session de navigation
+        (onglet ouvert) : la mémorisation est limitée à la session depuis le
+        24/11/2026, pour qu'un poste ayant déjà ouvert le catalogue ne
+        l'ouvre plus par une adresse tapée directement.
    ──────────────────────────────────────────────────────────────────────── */
 (function(){
   "use strict";
@@ -33,14 +36,14 @@
         }
       }
     }catch(e){}
-    try{ if(localStorage.getItem(CLE) === "1") return true; }catch(e){}
     try{ if(sessionStorage.getItem(CLE) === "1") return true; }catch(e){}
     return false;
   }
   var ok = autorise();
   window.MH_ADMIS = ok;   /* lu par le script de la page : rien ne se charge après un refus */
+  /* effacement de l'ancienne mémorisation permanente (avant le 24/11/2026) */
+  try{ localStorage.removeItem(CLE); }catch(e){}
   if(ok){
-    try{ localStorage.setItem(CLE,"1"); }catch(e){}
     try{ sessionStorage.setItem(CLE,"1"); }catch(e){}
   }
   function appliquer(){
@@ -269,6 +272,19 @@ a{color:var(--prune)}
 .go-soft{background:var(--blanc);color:var(--noir);border-color:var(--noir)}
 .go-soft:hover{background:var(--noir);color:var(--blanc)}
 .go-none{background:transparent;color:var(--gris);border:1px dashed var(--gris-clair);cursor:default}
+.go-info{background:transparent;color:var(--noir);border:0;padding-left:0;padding-right:0;cursor:default;white-space:normal;font-weight:600}
+/* état d'inscription : distingué par le contraste et le libellé, jamais par une couleur (réservée aux modalités) */
+.ins{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 9px;border:1px solid var(--noir)}
+.ins-ouverte{background:var(--noir);color:var(--blanc)}
+.ins-close{background:var(--blanc);color:var(--noir)}
+.ins-avenir{background:var(--blanc);color:var(--gris);border:1px dashed var(--gris-clair)}
+.inscr{margin:auto 0 0;border:1px solid var(--trait);border-left:4px solid var(--noir);padding:9px 12px;font-size:12.5px}
+.inscr-t{margin:0 0 4px;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.inscr ul{margin:0;padding:0;list-style:none;display:grid;gap:2px}
+.ins-k{font-weight:700}
+.inscr .code{font-family:Consolas,monospace;font-size:13px;letter-spacing:.03em}
+.inscr-n{margin:5px 0 0;color:var(--gris)}
+.meta.duree{margin-top:0;padding-top:0}
 .empty{border:1px dashed var(--gris-clair);padding:34px 22px;color:var(--gris)}
 .empty strong{display:block;font-size:16px;color:var(--noir);margin-bottom:6px}
 .empty .go{margin-top:14px}
@@ -594,9 +610,10 @@ const codeMod = k => MOD[k].c;
 const ACC = {
   direct:{l:"Lien direct",cta:"Consulter",cls:"go-direct"},
   inscription:{l:"Inscription en ligne",cta:"S'inscrire",cls:"go-direct"},
-  neeva:{l:"Inscription dans Neeva",cta:"S'inscrire dans Neeva",cls:"go-direct"},
+  neeva:{l:"Inscription Neeva",cta:"Inscription Neeva",cls:"go-direct"},
   intra34:{l:"Page Intra34",cta:"Ouvrir sur Intra34",cls:"go-direct"},
   plateforme:{l:"Plateforme e-learning",cta:"Ouvrir la plateforme",cls:"go-soft"},
+  externe:{l:"Plateforme externe",cta:"Consulter",cls:"go-soft"},
   generique:{l:"Renvoi Outil'thèque",cta:"Boîte à outils",cls:"go-soft"},
   none:{l:"Lien à renseigner",cta:"Lien à renseigner",cls:"go-none"}
 };
@@ -604,6 +621,7 @@ const accDe = (brut, lien) => { const v = norm(brut||"").trim();
   if(v === "inscription neeva" || v === "neeva") return "neeva";
   if(v === "directe") return "direct";
   if(v === "plateforme e-learning") return "plateforme";
+  if(v === "plateforme externe") return "externe";
   if(ACC[v] && v !== "none") return v;
   /* Libellé inconnu (liste renommée dans le classeur) : jamais d'erreur,
      un type d'accès est créé à son nom, avec un bouton « Consulter ». */
@@ -709,8 +727,8 @@ const vrai = v => /^(oui|yes|x|1|true|\*?nouveau)$/i.test((v||"").trim());
 function boot(rows){
   const head = rows.shift().map(x => x.trim().toLowerCase());
   const col = n => head.indexOf(n);
-  const [iI,iT,iM,iD,iA,iTh,iU,iK,iN,iP,iEl] =
-    ["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","elearning"].map(col);
+  const [iI,iT,iM,iD,iA,iTh,iU,iK,iN,iP,iEl,iC,iDu] =
+    ["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","elearning","code_neeva","duree"].map(col);
   if (iT < 0 || iM < 0) throw new Error("colonnes « titre » et « modalite » attendues");
   const lu = (r,i) => i < 0 ? "" : (r[i] || "").trim();
   DATA = rows.map((r, i) => {
@@ -719,19 +737,22 @@ function boot(rows){
     if (m === "Formation" && vrai(lu(r,iEl))) m = "Formation e-learning";   /* ancien schéma */
     return { id: lu(r,iI) || ("r" + i), t: lu(r,iT), m, mc: codeMod(m), dt: litDates(lu(r,iD)),
       ax: axesDe(lu(r,iA)), th: lu(r,iTh).split("|").map(s => s.trim()).filter(Boolean),
-      u, k: accDe(lu(r,iK), u), n: vrai(lu(r,iN)), p: lu(r,iP) };
+      u, k: accDe(lu(r,iK), u), n: vrai(lu(r,iN)), p: lu(r,iP), c: lu(r,iC), du: lu(r,iDu) };
   }).filter(o => o.t);
+  /* Neeva ne s'ouvre pas par une adresse : un lien éventuel n'est jamais affiché
+     (le contrôle demande de le vider dans le classeur). */
+  DATA.forEach(o => { if(o.k === "neeva") o.u = null; });
   const vus = new Set();
   DATA.forEach(o => o.th.forEach(x => vus.add(x)));
   TH_ORDER = [...vus].sort((a,b) => a.localeCompare(b,"fr"));
   DATA.forEach(o => {
     o._t = " "+norm(o.t)+" ";
-    o._s = " "+norm([o.t, o.th.join(" "), MOD[o.m].l, o.p, o.ax.map(a=>AXE[a].s).join(" "), o.n ? "nouveau nouveaute" : ""].join(" "))+" ";
+    o._s = " "+norm([o.t, o.th.join(" "), MOD[o.m].l, o.p, o.ax.map(a=>AXE[a].s).join(" "), o.n ? "nouveau nouveaute" : "", o.c].join(" "))+" ";
     o._d = sessions(o.dt.dates);
   });
   const nl = DATA.filter(o => o.u).length;
   $("s-link").textContent = nl;
-  $("s-nolink").textContent = DATA.length - nl;
+  $("s-nolink").textContent = DATA.filter(o => !o.u && o.k !== "neeva").length;
   $("s-new").textContent = DATA.filter(o => o.n).length;
   document.querySelectorAll(".js-total").forEach(el => el.textContent = DATA.length);
   $("legend").innerHTML = MOD_CLES.filter(k => DATA.some(o => o.m === k)).map(k =>
@@ -770,6 +791,41 @@ function mentionDate(o){
   if(o._d.length) return o._d.map(libelleSession).join(" · ");
   if(o.dt.avenir) return "Sur session programmée — date à venir";
   return "Disponible tout de suite";
+}
+/* ─── Inscription : état, encadré « S'inscrire » (24/11/2026) ────────────────
+   Pour les seuls types « Inscription Neeva » et « Inscription directe ».
+   L'état se déduit des dates : « Inscription ouverte » tant qu'une session
+   commence après aujourd'hui + CLOTURE jours (parametres.csv, clé
+   neeva_cloture_jours ; 0 par défaut : ouverte jusqu'à la veille) ;
+   « Inscriptions closes » si une session approche mais que le délai est passé ;
+   sinon « Prochaines dates à venir ». La couleur ne porte jamais l'état seule :
+   le libellé est toujours écrit (RGAA 3.1), et la couleur reste réservée aux
+   modalités ; l'état se distingue par le contraste (plein, contour, pointillé). */
+let CLOTURE = 0;
+const INSCR = {neeva:1, inscription:1};
+function etatInscription(o){
+  const auj = aujourdhui();
+  let seuil = auj; for(let i=0;i<CLOTURE;i++) seuil = jourSuivant(seuil);
+  if(o._d.some(j => j[0] > seuil)) return {c:"ouverte", l:"Inscription ouverte"};
+  if(o._d.some(j => j[0] >= auj)) return {c:"close", l:"Inscriptions closes"};
+  return {c:"avenir", l:"Prochaines dates à venir"};
+}
+const pastilleEtat = e => '<span class="ins ins-'+e.c+'"><span aria-hidden="true">'+(e.c === "ouverte" ? "●" : "○")+'</span>'+esc(e.l)+'</span>';
+function datesAVenir(o){
+  const auj = aujourdhui(), f = o._d.filter(j => j[j.length-1] >= auj);
+  return f.length ? f.map(libelleSession).join(" · ") : "à venir";
+}
+function encadre(o){
+  const neeva = o.k === "neeva";
+  const ligne = (t, v) => '<li><span class="ins-k">'+t+'</span> '+v+'</li>';
+  return '<div class="inscr" role="group" aria-label="S\'inscrire à « '+esc(o.t)+' »"><p class="inscr-t">S\'inscrire</p><ul>'
+    + ligne("Où :", neeva ? "Neeva (page d'accueil d'Intra34)" : "Intra34")
+    + (neeva ? ligne("Code Neeva :", o.c ? '<strong class="code">'+surligne(o.c)+'</strong>' : "communiqué prochainement") : "")
+    + ligne("Dates :", esc(datesAVenir(o)))
+    + (o.du ? ligne("Durée :", esc(o.du)) : "")
+    + "</ul>"
+    + (neeva && o.c ? '<p class="inscr-n">Recherchez ce code dans Neeva pour vous inscrire.</p>' : "")
+    + "</div>";
 }
 const svg = (i,t) => '<svg width="'+(t||13)+'" height="'+(t||13)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+i+'</svg>';
 const badge = k => '<span class="badge b-'+MOD[k].c+'">'+svg(MOD[k].i)+esc(MOD[k].l)+'</span>';
@@ -821,18 +877,21 @@ function groupeDe(o, auj){
 const prochaine = (o, auj) => { const j = o._d.find(j => j[j.length-1] >= auj); return j ? j[0] : "9999"; };
 
 function carte(o){
-  const a = ACC[o.k];
+  const a = ACC[o.k], ins = INSCR[o.k];
   const cta = o.u
-    ? '<a class="go '+a.cls+'" href="'+esc(o.u)+'" target="_blank" rel="noopener">'+a.cta+' <span aria-hidden="true">↗</span><span class="sr"> — '+esc(o.t)+', nouvelle fenêtre</span></a>'
-    : '<span class="go go-none">Lien à renseigner</span>';
+    ? '<a class="go '+a.cls+'" href="'+esc(o.u)+'" target="_blank" rel="noopener">'+(o.k === "inscription" ? "S'inscrire" : a.cta)+' <span aria-hidden="true">↗</span><span class="sr"> — '+esc(o.t)+', nouvelle fenêtre</span></a>'
+    : (o.k === "neeva" ? "" : '<span class="go go-none">Lien à renseigner</span>');
   return '<article class="card" id="r-'+esc(o.id)+'">'
   + '<div class="badges">'+badge(o.m)
-  + (o.n ? '<span class="badge nouv">*nouveau</span>' : '')+'</div>'
+  + (o.n ? '<span class="badge nouv">*nouveau</span>' : '')
+  + (ins ? pastilleEtat(etatInscription(o)) : '')+'</div>'
   + '<h3>'+surligne(o.t)+'</h3>'
   + (o.p ? '<p class="pres court" id="p-'+esc(o.id)+'">'+surligne(o.p)+'</p>'
          + '<button class="plus" type="button" hidden aria-expanded="false" aria-controls="p-'+esc(o.id)+'">Lire la suite</button>' : '')
   + (o.th.length ? '<p class="themes">'+o.th.map(x=>'<button class="theme" type="button" data-th="'+esc(x)+'" title="Voir toutes les ressources de cette thématique">'+esc(x)+'</button>').join("")+'</p>' : '')
-  + '<p class="meta'+(o._d.length ? " date" : "")+'">'+esc(mentionDate(o))+'</p>'
+  + (ins ? encadre(o)
+         : '<p class="meta'+(o._d.length ? " date" : "")+'">'+esc(mentionDate(o))+(o.du && o._d.length ? " · "+esc(o.du) : "")+'</p>'
+           + (o.du && !o._d.length ? '<p class="meta duree">Durée : '+esc(o.du)+'</p>' : ''))
   + '<div class="foot"><span class="foot-g"><span class="axe" title="'+esc(o.ax.map(x=>AXE[x].l).join(" · "))+'">'+axeCourt(o.ax)+'</span>'
   + '<button class="copie" type="button" data-copie="'+esc(o.id)+'" aria-label="Copier le lien vers la fiche « '+esc(o.t)+' »" title="Copier le lien vers cette fiche">'
   + svg('<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.5-2.5a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.5 2.5a4 4 0 0 0 5.7 5.7l1-1"/>',14)+'</button></span>'
@@ -896,7 +955,9 @@ function mesurePres(){
    faute de quoi le destinataire d'un lien recevrait la page de refus */
 function adresse(partage){
   const p = new URLSearchParams();
-  if(partage) p.set("src","intra34");
+  /* src=intra34 reste dans la barre d'adresse : un favori enregistré depuis la page
+     rouvre le catalogue, alors que l'admission n'est plus mémorisée qu'à la session. */
+  p.set("src","intra34");
   if(S.q) p.set("q", $("q").value.trim());
   ["m","k","a"].forEach(k=>{ if(S[k].size) p.set(k,[...S[k]].join(",")); });
   if(S.t.size) p.set("t",[...S.t].join("|"));
@@ -1023,13 +1084,15 @@ function majCalendrier(){
       }
       const o = e.o, A = ACC[o.k];
       h += '<div class="sess"><div class="sess-j">'+esc(libelleSession(e.j))
-         + (e.j.length>1 ? "<small>"+e.j.length+" jours</small>" : "")
+         + (o.du ? "<small>"+esc(o.du)+"</small>" : e.j.length>1 ? "<small>"+e.j.length+" jours</small>" : "")
          + '</div><div><p class="sess-t"><a href="#r-'+esc(o.id)+'" data-fiche="'+esc(o.id)+'">'+esc(o.t)+'</a></p>'
          + (o.p ? '<p class="sess-p">'+esc(o.p)+'</p>' : '')
          + '<p class="sess-m">'+badge(o.m)+(o.n ? '<span class="badge nouv">*nouveau</span>' : '')
          + '<span>'+esc(axeCourt(o.ax))+"</span></p></div>"
          + '<div class="sess-a">'
-         + (o.u ? '<a class="go '+A.cls+'" href="'+esc(o.u)+'" target="_blank" rel="noopener">'+esc(A.cta)+' <span aria-hidden="true">↗</span></a>'
+         + (o.k === "neeva"
+              ? '<span class="go go-info">'+(o.c ? "Code Neeva : "+esc(o.c) : "Inscription Neeva")+"</span>"
+              : o.u ? '<a class="go '+A.cls+'" href="'+esc(o.u)+'" target="_blank" rel="noopener">'+esc(o.k === "inscription" ? "S'inscrire" : A.cta)+' <span aria-hidden="true">↗</span></a>'
                 : '<span class="go go-none">'+esc(ACC.none.cta)+"</span>")
          + (futur ? '<a class="go go-soft" href="'+ics(o,e.j)+'" download="'+esc(o.id)+'.ics">Ajouter à mon agenda</a>' : '')
          + "</div></div>";
@@ -1118,6 +1181,9 @@ function initFromUrl(){
 function parametres(txt){
   const P = {};
   parseCSV(txt || "").slice(1).forEach(r => { P[(r[0]||"").trim()] = (r[1]||"").trim(); });
+  const n = parseInt(P.neeva_cloture_jours, 10);
+  CLOTURE = isNaN(n) || n < 0 ? 0 : Math.min(n, 90);
+  if(typeof DATA !== "undefined" && DATA && DATA.length) render();
   document.querySelectorAll("[data-param]").forEach(a => {
     const u = P[a.dataset.param] || "";
     if(/^https:\/\/\S+$/.test(u)){ a.href = u; a.hidden = false; } else { a.removeAttribute("href"); a.hidden = true; }

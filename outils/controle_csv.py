@@ -4,20 +4,23 @@
 Usage : python3 controle_csv.py nouveau.csv [ancien.csv]
 Sortie : rapport en Markdown ; code retour 1 s'il reste une ERREUR bloquante.
 
-Schéma à dix colonnes, arrêté le 11 novembre 2026 :
-  id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
+Schéma à douze colonnes (dix le 11 novembre 2026, plus code_neeva et duree le 24) :
+  id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree
 Le CSV est extrait du classeur de pilotage (outils/extraire_catalogue.py ou
 feuille d'export) : une erreur se corrige DANS LE CLASSEUR, jamais dans le CSV."""
 import csv, datetime, io, re, sys, unicodedata
 from collections import Counter
 
-COLS = ["id", "titre", "modalite", "date", "axe", "thematiques", "lien", "type_lien", "nouveau", "presentation"]
+COLS = ["id", "titre", "modalite", "date", "axe", "thematiques", "lien", "type_lien", "nouveau", "presentation", "code_neeva", "duree"]
+# Colonnes du 24/11/2026 : leur absence (fichier antérieur) est signalée, jamais bloquante.
+COLS_FACULTATIVES = ["code_neeva", "duree"]
+DUREE_MAX = 30
 MOD = ["Formation", "Formation e-learning", "Parcours Hérault Managers", "Atelier d'échange de pratiques",
        "Guide / fiche boussole", "Lundi RH", "Lundi RH Replay", "Outil'thèque", "Ressources", "#Managers", "Webinaire", "Autres"]
 # Appellations antérieures, encore lues par la page : signalées, non bloquantes.
 MOD_ANCIENNES = {"Atelier de co-construction de solutions": "Atelier d'échange de pratiques", "Atelier d'échange de pratique": "Atelier d'échange de pratiques"}
 AXE = ["1", "2", "3", "1 et 2", "1 et 3", "2 et 3", "Transverse"]
-ACC = ["direct", "inscription", "inscription Neeva", "intra34", "generique", "plateforme", ""]
+ACC = ["direct", "inscription", "inscription Neeva", "intra34", "generique", "plateforme", "externe", ""]
 # Une valeur hors de ces listes ne bloque jamais : la page sait l'afficher (voir CONSEQ).
 CONSEQ = {"modalite": "la fiche sera rangée sous « Autres actions »",
           "axe": "la fiche sera classée « Transverse »",
@@ -72,10 +75,12 @@ def main():
     enc, sep, head, data = lire(sys.argv[1])
     E, A = [], []
     if not enc.startswith("UTF-8"): E.append(f"Encodage {enc} : réenregistrer en « CSV UTF-8 » (sinon accents cassés).")
-    manq = [c for c in COLS if c not in head]
+    manq = [c for c in COLS if c not in head and c not in COLS_FACULTATIVES]
     if manq: E.append("Colonnes manquantes : " + ", ".join(manq))
+    fac = [c for c in COLS_FACULTATIVES if c not in head]
+    if fac: A.append("Colonnes absentes : " + ", ".join(fac) + " (fichier antérieur au 24/11/2026) : ni code Neeva ni durée ne seront affichés.")
     trop = [c for c in head if c not in COLS]
-    if trop: E.append("Colonnes hors schéma : " + ", ".join(trop) + ". Le dépôt est public : seules les dix colonnes "
+    if trop: E.append("Colonnes hors schéma : " + ", ".join(trop) + ". Le dépôt est public : seules les douze colonnes "
                       "publiables sortent du classeur (ni intervenant, ni référent, ni remarque, ni salle, ni effectif).")
     ids = Counter(d.get("id", "") for d in data); tits = Counter(d.get("titre", "").lower() for d in data)
     themes, auj, passees, datees, avenirs = Counter(), datetime.date.today(), 0, 0, 0
@@ -101,7 +106,13 @@ def main():
         u, k = d.get("lien", ""), d.get("type_lien", "")
         if u and not u.startswith("https://"): E.append(f"{L} : lien non https ou mal formé : {u}")
         if u and not k: A.append(f"{L} : lien présent mais type_lien vide (affiché « Consulter »).")
-        if k and not u: A.append(f"{L} : type_lien « {k} » sans lien (affiché « Lien à renseigner »).")
+        neeva = k == "inscription Neeva"
+        if neeva and u:
+            A.append(f"{L} : formation Neeva avec un lien ({u}). Neeva ne s'ouvre pas par une adresse : vider la cellule « Lien » dans le classeur. La fiche n'affiche pas ce lien.")
+        if k and not u and not neeva: A.append(f"{L} : type_lien « {k} » sans lien (affiché « Lien à renseigner »).")
+        if d.get("code_neeva") and not neeva:
+            A.append(f"{L} : code Neeva « {d['code_neeva']} » sur une action qui n'est pas en « Inscription Neeva » : il n'est pas affiché.")
+        if len(d.get("duree", "")) > DUREE_MAX: A.append(f"{L} : durée de {len(d['duree'])} caractères ({DUREE_MAX} au plus) : « {d['duree']} ».")
         if k == "direct" and u.rstrip("/").endswith(("360learning.com", "hi_2589236/outils")):
             A.append(f"{L} : lien générique marqué « direct ».")
         ok, avenir, ko = dates(d.get("date", ""))
@@ -128,10 +139,12 @@ def main():
 
     k = Counter(d.get("type_lien") or ("direct" if d.get("lien") else "à renseigner") for d in data)
     print(f"# Contrôle de offre.csv\n\n- Encodage : {enc} · séparateur « {sep} » · **{len(data)} fiches**")
-    print(f"- Liens : {sum(1 for d in data if d.get('lien'))} renseignés, {sum(1 for d in data if not d.get('lien'))} à renseigner ("
+    nv = [d for d in data if d.get("type_lien") == "inscription Neeva"]
+    print(f"- Liens : {sum(1 for d in data if d.get('lien'))} renseignés, {sum(1 for d in data if not d.get('lien') and d.get('type_lien') != 'inscription Neeva')} à renseigner, hors Neeva ("
           + ", ".join(f"{a} {b}" for a, b in k.most_common()) + ")")
     print("- Par modalité : " + ", ".join(f"{m} {c}" for m, c in Counter(d.get('modalite') for d in data).most_common()))
     print("- Par axe : " + ", ".join(f"{m} {c}" for m, c in sorted(Counter(d.get('axe') for d in data).items())))
+    print(f"- Formations Neeva : {len(nv)}, dont {sum(1 for d in nv if d.get('code_neeva'))} avec un code (les autres affichent « Code Neeva communiqué prochainement ») · durées renseignées : {sum(1 for d in data if d.get('duree'))}")
     print(f"- Calendrier : {datees} fiches datées (dont {passees} date(s) passée(s)), {avenirs} « à venir », {len(data)-datees-avenirs} en accès permanent")
     print(f"- Nouveautés : {sum(1 for d in data if d.get('nouveau') == 'oui')} · présentations : {sum(1 for d in data if d.get('presentation'))} sur {len(data)}")
     print(f"- Thématiques : {len(themes)}")

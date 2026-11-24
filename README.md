@@ -29,7 +29,7 @@ La page admet un visiteur selon trois conditions, dans cet ordre :
 
 1. l'adresse porte `?src=intra34` ;
 2. le visiteur arrive d'un site en `*.herault.fr` ;
-3. le visiteur est déjà entré validement depuis ce navigateur — un favori reste donc fonctionnel.
+3. le visiteur est déjà entré validement **dans la même session de navigation** (depuis le 24/11/2026 ; auparavant, l'admission était mémorisée sans limite sur le poste). Une adresse tapée sans le paramètre est donc refusée dans un nouvel onglet ou une nouvelle session. La barre d'adresse conserve `?src=intra34` : un favori enregistré depuis la page reste fonctionnel.
 
 Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de cette sélection » et « Copier le lien vers cette fiche » ajoutent d'eux-mêmes le paramètre : un lien transmis par une référente s'ouvre donc chez son destinataire.
 
@@ -39,7 +39,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 - `offre.csv` reste téléchargeable par qui connaît l'adresse.
 - `robots.txt` et `noindex` sont des **demandes**, que les aspirateurs malveillants ignorent.
 
-**Conséquence : seules dix colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
+**Conséquence : seules douze colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
 
 ## Mettre à jour le catalogue
 
@@ -50,7 +50,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 
 Une valeur de liste renommée dans le classeur ne bloque ni le convertisseur ni la page : une modalité inconnue est rangée sous « Autres actions », un axe illisible sous « Transverse », un type de lien inconnu reçoit un bouton « Consulter » à son nom. Le convertisseur le signale par un avertissement. Seuls bloquent : une colonne manquante, un identifiant vide ou en double, un lien non https, une date illisible.
 
-## Les dix colonnes de `offre.csv`
+## Les douze colonnes de `offre.csv`
 
 Séparateur point-virgule, encodage UTF-8 avec BOM.
 
@@ -63,9 +63,15 @@ Séparateur point-virgule, encodage UTF-8 avec BOM.
 | `axe` | étiquette d'axe | `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse` |
 | `thematiques` | thématique de l'action (une seule) | l'un des dix-huit libellés |
 | `lien` | adresse de la ressource | URL en https, ou vide |
-| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `plateforme` · `generique` — vide si pas de lien ; « directe », saisi dans le classeur, est écrit `direct` |
+| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` — vide si pas de lien ; « directe », saisi dans le classeur, est écrit `direct`, « Plateforme externe » est écrit `externe`. **Une formation Neeva n'a pas de lien** : Neeva ne s'ouvre pas par une adresse |
 | `nouveau` | mention « *nouveau » | `oui` ou vide |
 | `presentation` | présentation courte affichée sur la fiche | 300 caractères au plus, ou vide |
+| `code_neeva` | code à chercher dans Neeva, affiché dans l'encadré « S'inscrire » | texte, ou vide (« communiqué prochainement ») |
+| `duree` | durée d'une session | « 1 h 30 » (colonne « Durée » du classeur, pour les durées en heures), sinon déduite du nombre de jours : « ½ journée », « 2 jours » ; ou vide |
+
+### L'encadré « S'inscrire »
+
+Les fiches « Inscription Neeva » et « Inscription directe » portent un encadré : où s'inscrire, code Neeva, dates à venir, durée ; et une pastille d'état : **Inscription ouverte** (une session commence après aujourd'hui + le délai de clôture), **Inscriptions closes** (une session approche, délai dépassé), **Prochaines dates à venir** (aucune session à venir). Le délai se règle dans `parametres.csv`, clé `neeva_cloture_jours` (0 : ouverte jusqu'à la veille). L'état se lit par son libellé et son contraste, jamais par une couleur, réservée aux modalités.
 
 ### Les douze modalités
 

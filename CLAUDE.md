@@ -22,9 +22,9 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 
 | Fichier | Rôle |
 |---|---|
-| `offre.csv` | Le catalogue, dix colonnes, une ligne par fiche |
+| `offre.csv` | Le catalogue, douze colonnes, une ligne par fiche |
 | `index.html` | La page |
-| `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026. Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
+| `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026 ; délai de clôture des inscriptions en jours (`neeva_cloture_jours`, 0 par défaut, 24/11/2026). Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
 | `outils/extraire_catalogue.py` | Classeur → `offre.csv` (colonnes repérées par leur en-tête) |
 | `outils/controle_csv.py` | Contrôle avant mise en ligne — **point d'entrée de toute mise à jour** |
 | `outils/convertisseur.html` | Classeur → `offre.csv` + contrôle, page autonome hors ligne (SheetJS embarqué), pour travailler sans Python ni Claude. Transposition de `extraire_catalogue.py` et `controle_csv.py` : toute règle modifiée dans l'un se reporte dans l'autre. Équivalence vérifiée octet à octet le 17/11/2026 |
@@ -36,16 +36,18 @@ Cycle : modifier le classeur → extraire → contrôler → déposer → vérif
 
 ## 3. `offre.csv` — le schéma
 
-Point-virgule, UTF-8 avec BOM, dix colonnes dans cet ordre :
+Point-virgule, UTF-8 avec BOM, douze colonnes dans cet ordre (`code_neeva` et `duree` ajoutées le 24/11/2026 ; leur absence dans un fichier antérieur n'est qu'un avertissement) :
 
 ```
-id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation
+id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree
 ```
 
 - `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
 - `axe` — `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse`.
 - `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-huit libellés.
-- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `generique` · vide. Synonymes du classeur (table `TLIEN`) : « directe » → `direct`, « Inscription directe » → `inscription`, « Intra34 » → `intra34`, « Plateforme e-learning » → `plateforme`. **Toute autre valeur passe telle quelle** : la page crée un type d'accès à son nom, bouton « Consulter ». Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
+- `type_lien` — `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` · vide. Synonymes du classeur (table `TLIEN`) : « directe » → `direct`, « Inscription directe » → `inscription`, « Intra34 » → `intra34`, « Plateforme e-learning » → `plateforme`, « Plateforme externe » → `externe` (bouton « Consulter », 24/11/2026). **Une formation « Inscription Neeva » n'a pas de lien** (arbitrage MTAM du 24/11/2026 : Neeva ne s'ouvre pas par une adresse, et l'agenda Intra34 renvoie désormais au catalogue, qui ne renvoie plus aux pages événement) : un lien présent est signalé par le contrôle et n'est pas affiché.
+- `code_neeva` — colonne « Code Neeva » du classeur, première ligne renseignée de la fiche ; affiché dans l'encadré, vide → « communiqué prochainement ».
+- `duree` — colonne « Durée » du classeur (texte libre, réservé aux durées en heures, 30 caractères au plus) ; à défaut, « Nombre de jours par session » mis en forme : 0,5 → « ½ journée », 1 → « 1 jour », 2 → « 2 jours ». Cette colonne numérique reste la référence des bilans en jours : ne pas y écrire d'heures. **Toute autre valeur passe telle quelle** : la page crée un type d'accès à son nom, bouton « Consulter ». Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
 - `nouveau` — `oui` si « Type projet » vaut « Nouveaux projets » ; affiché « *nouveau », sans toucher au titre.
 - `presentation` — 300 caractères au plus. **Textes repris des sources de la MTAM : ne jamais en rédiger.**
 - `date` — dates séparées par ` | `, `à venir`, ou vide (accès permanent, donc hors calendrier).
@@ -89,7 +91,8 @@ Accompagner le changement et les transitions · Accompagner les moments clés de
 2. **Recherche** : tous les mots saisis doivent figurer dans la fiche (titre, présentation, thématique, modalité, axe), sans tenir compte des accents ni d'un pluriel ; les mots trouvés sont surlignés ; les titres qui correspondent passent devant.
 3. **Filtres cumulables** : nouveautés, modalité, thématique, axe, accès. Une modalité ou un type d'accès sans fiche n'est pas affiché.
 4. **Classement** : par modalité (défaut), thématique, axe, date, alphabet — avec un intertitre par groupe.
-5. **Les fiches** : pastille de modalité, « *nouveau », titre, présentation (quatre lignes, « Lire la suite » si elle est coupée), thématique cliquable, date, axe, lien copiable, bouton d'accès.
+5. **Les fiches** : pastille de modalité, « *nouveau », titre, présentation (quatre lignes, « Lire la suite » si elle est coupée), thématique cliquable, date (et durée), axe, lien copiable, bouton d'accès.
+6. **Encadré « S'inscrire »** (24/11/2026), pour les types `inscription Neeva` et `inscription` : « Où » (« Neeva (page d'accueil d'Intra34) », en texte, sans lien ; ou « Intra34 » avec le bouton « S'inscrire »), code Neeva, dates à venir, durée. Pastille d'état à côté de la modalité : « Inscription ouverte » (une session commence après aujourd'hui + `neeva_cloture_jours`), « Inscriptions closes », « Prochaines dates à venir ». **Pas de couleur pour l'état** : plein noir, contour, pointillé, et toujours le libellé. Une fiche par module : chaque module d'un parcours a son identifiant ; les sessions d'un même identifiant restent réunies.
 
 **Vue « Le calendrier »** : sessions à venir par mois, avec présentation et invitation d'agenda (`.ics`) ; puis « Programmation en cours », par modalité ; puis les sessions passées, **repliées** (`CAL_PASSE = false`).
 
@@ -125,7 +128,7 @@ Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` —
 
 ## 8. Le filtrage d'accès — et comment tester
 
-Admis : `?src=intra34`, referrer `*.herault.fr`, ou entrée valide antérieure sur ce navigateur. **Tout test s'effectue avec `?src=intra34`** ; retester le refus demande une fenêtre privée. **Ce dispositif ne protège rien** : aucune donnée non diffusable dans le CSV.
+Admis : `?src=intra34`, referrer `*.herault.fr`, ou entrée valide antérieure **dans la même session** (`sessionStorage`, depuis le 24/11/2026, à la demande de la MTAM : la mémorisation permanente ouvrait le site par simple adresse sur tout poste déjà admis ; l'ancienne valeur `localStorage` est effacée au chargement). `src=intra34` est conservé dans la barre d'adresse, pour que les favoris fonctionnent. **Tout test s'effectue avec `?src=intra34`** ; retester le refus demande une fenêtre privée. **Ce dispositif ne protège rien** : aucune donnée non diffusable dans le CSV.
 
 La clé de mémorisation s'appelle toujours `mh-boussole-acces` : la renommer refuserait les favoris des managers déjà admis.
 

@@ -4,7 +4,7 @@
 Usage : python3 extraire_catalogue.py classeur.xlsx [offre.csv]
 
 Le classeur est le fichier maître ; offre.csv n'est jamais modifié à la main.
-Seules dix colonnes publiables sortent : aucun intervenant, référent, remarque,
+Seules douze colonnes publiables sortent : aucun intervenant, référent, remarque,
 salle ni effectif. Les colonnes sont repérées par leur EN-TÊTE, pas par leur
 lettre : déplacer une colonne dans le classeur ne casse pas l'extraction.
 
@@ -15,17 +15,20 @@ Règles (voir claude/methode-pilotage-catalogue.md) :
   - colonne date : les dates saisies (du début à la fin si une date de fin est
     donnée), hors sessions « Suspendu » ou « Annulé » ; à défaut, vide si toutes
     les lignes sont « Déployé » (accès permanent), sinon « à venir » ;
-  - nouveau = oui si « Type projet » vaut « Nouveaux projets ».
+  - nouveau = oui si « Type projet » vaut « Nouveaux projets » ;
+  - code_neeva : « Code Neeva » de la première ligne qui en porte un ;
+  - duree : « Durée » (texte libre, pour une durée en heures) si elle est remplie,
+    sinon « Nombre de jours par session » mis en forme (« ½ journée », « 2 jours »).
 
 Code retour 1 en cas d'anomalie bloquante : le CSV n'est alors pas écrit."""
 import csv, datetime, json, re, sys, unicodedata
 
 SORTIE = ["id", "titre", "modalite", "date", "axe", "thematiques",
-          "lien", "type_lien", "nouveau", "presentation"]
+          "lien", "type_lien", "nouveau", "presentation", "code_neeva", "duree"]
 # synonymes admis dans la colonne « Type de lien » du classeur -> valeur écrite dans offre.csv
 # Synonymes de « Type de lien ». Une valeur absente de cette table passe telle quelle :
 # la page lui donne alors un bouton « Consulter » à son nom (rien ne bloque).
-TLIEN = {"directe": "direct", "inscription directe": "inscription", "inscription neeva": "inscription Neeva", "intra34": "intra34", "plateforme e-learning": "plateforme", "plateforme": "plateforme"}
+TLIEN = {"directe": "direct", "inscription directe": "inscription", "inscription neeva": "inscription Neeva", "intra34": "intra34", "plateforme e-learning": "plateforme", "plateforme": "plateforme", "plateforme externe": "externe", "externe": "externe"}
 # Valeurs qui changent le sens d'une ligne : une valeur inconnue est signalée, jamais bloquante.
 ETATS = ("a faire", "en cours", "communication", "realise", "suspendu", "annule", "deploye")
 # en-tête du classeur (début, sans accent ni casse) -> nom interne
@@ -34,7 +37,17 @@ ENTETES = {"identifiant": "id", "intitule de l'action": "titre", "axe": "axe",
            "type projet": "type", "presentation courte": "pres",
            "date de debut": "debut", "date (1re session)": "debut",
            "date de fin": "fin", "etat d'avancement": "etat",
-           "publier au catalogue": "pub", "lien": "lien", "type de lien": "tlien"}
+           "publier au catalogue": "pub", "lien": "lien", "type de lien": "tlien",
+           "code neeva": "code", "duree": "duree", "nombre de jours par session": "jours"}
+
+def jours_en_texte(v):
+    """Nombre de jours par session -> libellé affiché ; vide si illisible ou nul."""
+    try: x = float(str(v).replace(",", ".").strip())
+    except ValueError: return ""
+    if x <= 0: return ""
+    if x == 0.5: return "½ journée"
+    n = ("%g" % x).replace(".", ",")
+    return n + (" jour" if x < 2 else " jours")
 
 def cle(s):
     s = str(s or "").replace("œ", "oe").replace("Œ", "OE").replace("’", "'")
@@ -74,7 +87,7 @@ def main():
     col = {}
     for i, h in enumerate(tete):
         for debut, nom in ENTETES.items():
-            if h == debut or (debut == "presentation courte" and h.startswith(debut)):
+            if h == debut or (debut in ("presentation courte", "duree", "code neeva") and h.startswith(debut)):
                 col.setdefault(nom, i)
     manq = [n for n in ("id", "titre", "axe", "th", "mod", "type", "pres", "debut",
                         "etat", "pub", "lien", "tlien") if n not in col]
@@ -93,6 +106,7 @@ def main():
                              "axe": txt(r, "axe"), "th": txt(r, "th"), "lien": txt(r, "lien"),
                              "tlien": txt(r, "tlien"), "type": txt(r, "type"),
                              "pres": txt(r, "pres"), "pub": cle(txt(r, "pub")) == "oui",
+                             "code": txt(r, "code"), "duree": txt(r, "duree"), "jours": txt(r, "jours"),
                              "dates": set(), "etats": [], "ligne": n}
             ordre_ids.append(i)
         else:
@@ -103,6 +117,10 @@ def main():
                     A.append(f"L{n} « {f['titre']} » : {lib} différente de la ligne {f['ligne']} ; celle de la ligne {f['ligne']} est retenue.")
             if not f["lien"] and txt(r, "lien"): f["lien"], f["tlien"] = txt(r, "lien"), txt(r, "tlien")
             if not f["pres"] and txt(r, "pres"): f["pres"] = txt(r, "pres")
+            if txt(r, "code") and f["code"] and txt(r, "code") != f["code"]:
+                A.append(f"L{n} « {f['titre']} » : code Neeva « {txt(r, 'code')} » différent de la ligne {f['ligne']} ; celui de la ligne {f['ligne']} est retenu.")
+            for k in ("code", "duree", "jours"):
+                if not f[k] and txt(r, k): f[k] = txt(r, k)
             f["pub"] = f["pub"] or cle(txt(r, "pub")) == "oui"
         etat = txt(r, "etat"); f["etats"].append(etat)
         if etat and cle(etat) not in ETATS:
@@ -129,7 +147,8 @@ def main():
         if len(f["pres"]) > 300:
             A.append(f"L{f['ligne']} « {f['titre']} » : présentation de {len(f['pres'])} caractères (300 au plus).")
         rangs.append([i, f["titre"], f["mod"], date, f["axe"], f["th"], f["lien"], TLIEN.get(cle(f["tlien"]), f["tlien"]),
-                      "oui" if cle(f["type"]).startswith("nouveau") else "", f["pres"]])
+                      "oui" if cle(f["type"]).startswith("nouveau") else "", f["pres"],
+                      f["code"], f["duree"] or jours_en_texte(f["jours"])])
 
     for x in A: print("Avertissement — " + x)
     if E:
