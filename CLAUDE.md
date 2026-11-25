@@ -24,7 +24,7 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 |---|---|
 | `offre.csv` | Le catalogue, douze colonnes, une ligne par fiche |
 | `index.html` | La page |
-| `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026 ; délai de clôture des inscriptions en jours (`neeva_cloture_jours`, 0 par défaut, 24/11/2026). Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
+| `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026 ; délai de clôture des inscriptions en jours (`neeva_cloture_jours`, 0 par défaut, 24/11/2026) ; millésime affiché (`millesime`, « 2027/28 », 25/11/2026 : titre, bandeau, « Nouveautés », calendrier, agenda — changer d'année = changer cette cellule ; le mot du DGS n'en dépend pas). Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
 | `outils/extraire_catalogue.py` | Classeur → `offre.csv` (colonnes repérées par leur en-tête) |
 | `outils/controle_csv.py` | Contrôle avant mise en ligne — **point d'entrée de toute mise à jour** |
 | `outils/convertisseur.html` | Classeur → `offre.csv` + contrôle, page autonome hors ligne (SheetJS embarqué), pour travailler sans Python ni Claude. Transposition de `extraire_catalogue.py` et `controle_csv.py` : toute règle modifiée dans l'un se reporte dans l'autre. Équivalence vérifiée octet à octet le 17/11/2026 |
@@ -124,7 +124,7 @@ Design system « CD34 Formation ». Prune `#C0116F` (blanc dessus) · vert d'eau
 | #Managers | prune 10 %, texte prune |
 | Autres | blanc |
 
-Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` — **ne jamais rétablir Google Fonts**, qui transmet à Google l'adresse IP de chaque manager · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
+**Logo du Département** : version officielle monochrome prune de la charte (fichier fourni par la MTAM le 25/11/2026), sans liseré ajouté, 152 px de large (taille minimale de la charte : 40 mm). Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` — **ne jamais rétablir Google Fonts**, qui transmet à Google l'adresse IP de chaque manager · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
 
 ## 8. Le filtrage d'accès — et comment tester
 
