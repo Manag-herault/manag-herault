@@ -728,8 +728,8 @@ const vrai = v => /^(oui|yes|x|1|true|\*?nouveau)$/i.test((v||"").trim());
 function boot(rows){
   const head = rows.shift().map(x => x.trim().toLowerCase());
   const col = n => head.indexOf(n);
-  const [iI,iT,iM,iD,iA,iTh,iU,iK,iN,iP,iEl,iC,iDu] =
-    ["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","elearning","code_neeva","duree"].map(col);
+  const [iI,iT,iM,iD,iA,iTh,iU,iK,iN,iP,iEl,iC,iDu,iIo] =
+    ["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","elearning","code_neeva","duree","inscription_ouverte"].map(col);
   if (iT < 0 || iM < 0) throw new Error("colonnes « titre » et « modalite » attendues");
   const lu = (r,i) => i < 0 ? "" : (r[i] || "").trim();
   DATA = rows.map((r, i) => {
@@ -738,7 +738,7 @@ function boot(rows){
     if (m === "Formation" && vrai(lu(r,iEl))) m = "Formation e-learning";   /* ancien schéma */
     return { id: lu(r,iI) || ("r" + i), t: lu(r,iT), m, mc: codeMod(m), dt: litDates(lu(r,iD)),
       ax: axesDe(lu(r,iA)), th: lu(r,iTh).split("|").map(s => s.trim()).filter(Boolean),
-      u, k: accDe(lu(r,iK), u), n: vrai(lu(r,iN)), p: lu(r,iP), c: lu(r,iC), du: lu(r,iDu) };
+      u, k: accDe(lu(r,iK), u), n: vrai(lu(r,iN)), p: lu(r,iP), c: lu(r,iC), du: lu(r,iDu), io: lu(r,iIo).toLowerCase() };
   }).filter(o => o.t);
   /* Neeva ne s'ouvre pas par une adresse : un lien éventuel n'est jamais affiché
      (le contrôle demande de le vider dans le classeur). */
@@ -799,7 +799,12 @@ function mentionDate(o){
    commence après aujourd'hui + CLOTURE jours (parametres.csv, clé
    neeva_cloture_jours ; 0 par défaut : ouverte jusqu'à la veille) ;
    « Inscriptions closes » si une session approche mais que le délai est passé ;
-   sinon « Prochaines dates à venir ». La couleur ne porte jamais l'état seule :
+   sinon « Prochaines dates à venir ».
+   Colonne inscription_ouverte (25/11/2026), décision de la MTAM, bornée par les dates :
+   « oui » → règle ci-dessus (la date l'emporte sur un « oui » oublié : sessions
+   passées → « Inscriptions closes ») ; « non » → « Inscriptions prochainement »
+   si une session est à venir ; vide → règle ci-dessus, sauf une formation Neeva
+   sans code, jamais « ouverte » (« Inscriptions prochainement »). La couleur ne porte jamais l'état seule :
    le libellé est toujours écrit (RGAA 3.1), et la couleur reste réservée aux
    modalités ; l'état se distingue par le contraste (plein, contour, pointillé). */
 let CLOTURE = 0;
@@ -815,7 +820,12 @@ const INSCR = {neeva:1, inscription:1};
 function etatInscription(o){
   const auj = aujourdhui();
   let seuil = auj; for(let i=0;i<CLOTURE;i++) seuil = jourSuivant(seuil);
-  if(o._d.some(j => j[0] > seuil)) return {c:"ouverte", l:"Inscription ouverte"};
+  const PROCH = {c:"avenir", l:"Inscriptions prochainement"};
+  const aVenir = o._d.some(j => j[0] >= auj);
+  if(o.io === "non") return aVenir ? PROCH : {c:"avenir", l:"Prochaines dates à venir"};
+  if(o.io === "oui" && o._d.length && !aVenir) return {c:"close", l:"Inscriptions closes"};
+  if(o._d.some(j => j[0] > seuil))
+    return (o.k === "neeva" && !o.c) ? PROCH : {c:"ouverte", l:"Inscription ouverte"};
   if(o._d.some(j => j[0] >= auj)) return {c:"close", l:"Inscriptions closes"};
   return {c:"avenir", l:"Prochaines dates à venir"};
 }

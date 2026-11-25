@@ -4,16 +4,17 @@
 Usage : python3 controle_csv.py nouveau.csv [ancien.csv]
 Sortie : rapport en Markdown ; code retour 1 s'il reste une ERREUR bloquante.
 
-Schéma à douze colonnes (dix le 11 novembre 2026, plus code_neeva et duree le 24) :
-  id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree
+Schéma à treize colonnes (dix le 11 novembre 2026, plus code_neeva et duree le 24,
+plus inscription_ouverte le 25) :
+  id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree;inscription_ouverte
 Le CSV est extrait du classeur de pilotage (outils/extraire_catalogue.py ou
 feuille d'export) : une erreur se corrige DANS LE CLASSEUR, jamais dans le CSV."""
 import csv, datetime, io, re, sys, unicodedata
 from collections import Counter
 
-COLS = ["id", "titre", "modalite", "date", "axe", "thematiques", "lien", "type_lien", "nouveau", "presentation", "code_neeva", "duree"]
-# Colonnes du 24/11/2026 : leur absence (fichier antérieur) est signalée, jamais bloquante.
-COLS_FACULTATIVES = ["code_neeva", "duree"]
+COLS = ["id", "titre", "modalite", "date", "axe", "thematiques", "lien", "type_lien", "nouveau", "presentation", "code_neeva", "duree", "inscription_ouverte"]
+# Colonnes du 24 et du 25/11/2026 : leur absence (fichier antérieur) est signalée, jamais bloquante.
+COLS_FACULTATIVES = ["code_neeva", "duree", "inscription_ouverte"]
 DUREE_MAX = 30
 MOD = ["Formation", "Formation e-learning", "Parcours Hérault Managers", "Atelier d'échange de pratiques",
        "Guide / fiche boussole", "Lundi RH", "Lundi RH Replay", "Outil'thèque", "Ressources", "#Managers", "Webinaire", "Autres"]
@@ -80,7 +81,7 @@ def main():
     fac = [c for c in COLS_FACULTATIVES if c not in head]
     if fac: A.append("Colonnes absentes : " + ", ".join(fac) + " (fichier antérieur au 24/11/2026) : ni code Neeva ni durée ne seront affichés.")
     trop = [c for c in head if c not in COLS]
-    if trop: E.append("Colonnes hors schéma : " + ", ".join(trop) + ". Le dépôt est public : seules les douze colonnes "
+    if trop: E.append("Colonnes hors schéma : " + ", ".join(trop) + ". Le dépôt est public : seules les treize colonnes "
                       "publiables sortent du classeur (ni intervenant, ni référent, ni remarque, ni salle, ni effectif).")
     ids = Counter(d.get("id", "") for d in data); tits = Counter(d.get("titre", "").lower() for d in data)
     themes, auj, passees, datees, avenirs = Counter(), datetime.date.today(), 0, 0, 0
@@ -112,6 +113,12 @@ def main():
         if k and not u and not neeva: A.append(f"{L} : type_lien « {k} » sans lien (affiché « Lien à renseigner »).")
         if d.get("code_neeva") and not neeva:
             A.append(f"{L} : code Neeva « {d['code_neeva']} » sur une action qui n'est pas en « Inscription Neeva » : il n'est pas affiché.")
+        io_ = d.get("inscription_ouverte", "")
+        if io_ not in ("", "oui", "non"): E.append(f"{L} : inscription_ouverte = « {io_} » (attendu : oui, non ou vide).")
+        if io_ and k not in ("inscription", "inscription Neeva"):
+            A.append(f"{L} : « Ouvert à l'inscription » renseigné sur une action sans inscription (type « {k} ») : sans effet.")
+        if io_ == "oui" and neeva and not d.get("code_neeva"):
+            A.append(f"{L} : formation Neeva « ouverte » sans code Neeva : la page affiche « Inscriptions prochainement » tant que le code manque.")
         if len(d.get("duree", "")) > DUREE_MAX: A.append(f"{L} : durée de {len(d['duree'])} caractères ({DUREE_MAX} au plus) : « {d['duree']} ».")
         if k == "direct" and u.rstrip("/").endswith(("360learning.com", "hi_2589236/outils")):
             A.append(f"{L} : lien générique marqué « direct ».")
@@ -145,6 +152,8 @@ def main():
     print("- Par modalité : " + ", ".join(f"{m} {c}" for m, c in Counter(d.get('modalite') for d in data).most_common()))
     print("- Par axe : " + ", ".join(f"{m} {c}" for m, c in sorted(Counter(d.get('axe') for d in data).items())))
     print(f"- Formations Neeva : {len(nv)}, dont {sum(1 for d in nv if d.get('code_neeva'))} avec un code (les autres affichent « Code Neeva communiqué prochainement ») · durées renseignées : {sum(1 for d in data if d.get('duree'))}")
+    ins = [d for d in data if d.get("type_lien") in ("inscription", "inscription Neeva")]
+    print(f"- Ouvert à l'inscription : {sum(1 for d in ins if d.get('inscription_ouverte') == 'oui')} oui, {sum(1 for d in ins if d.get('inscription_ouverte') == 'non')} non, {sum(1 for d in ins if not d.get('inscription_ouverte'))} non renseigné(s), sur {len(ins)} actions à inscription")
     print(f"- Calendrier : {datees} fiches datées (dont {passees} date(s) passée(s)), {avenirs} « à venir », {len(data)-datees-avenirs} en accès permanent")
     print(f"- Nouveautés : {sum(1 for d in data if d.get('nouveau') == 'oui')} · présentations : {sum(1 for d in data if d.get('presentation'))} sur {len(data)}")
     print(f"- Thématiques : {len(themes)}")

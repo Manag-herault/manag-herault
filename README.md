@@ -39,7 +39,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 - `offre.csv` reste téléchargeable par qui connaît l'adresse.
 - `robots.txt` et `noindex` sont des **demandes**, que les aspirateurs malveillants ignorent.
 
-**Conséquence : seules douze colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
+**Conséquence : seules treize colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
 
 ## Mettre à jour le catalogue
 
@@ -50,7 +50,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 
 Une valeur de liste renommée dans le classeur ne bloque ni le convertisseur ni la page : une modalité inconnue est rangée sous « Autres actions », un axe illisible sous « Transverse », un type de lien inconnu reçoit un bouton « Consulter » à son nom. Le convertisseur le signale par un avertissement. Seuls bloquent : une colonne manquante, un identifiant vide ou en double, un lien non https, une date illisible.
 
-## Les douze colonnes de `offre.csv`
+## Les treize colonnes de `offre.csv`
 
 Séparateur point-virgule, encodage UTF-8 avec BOM.
 
@@ -68,10 +68,13 @@ Séparateur point-virgule, encodage UTF-8 avec BOM.
 | `presentation` | présentation courte affichée sur la fiche | 300 caractères au plus, ou vide |
 | `code_neeva` | code à chercher dans Neeva, affiché dans l'encadré « S'inscrire » | texte, ou vide (« communiqué prochainement ») |
 | `duree` | durée d'une session | « 1 h 30 » (colonne « Durée » du classeur, pour les durées en heures), sinon déduite du nombre de jours : « ½ journée », « 2 jours » ; ou vide |
+| `inscription_ouverte` | décision de la MTAM sur l'ouverture des inscriptions (encadré « S'inscrire ») | `oui` · `non` · vide |
 
 ### L'encadré « S'inscrire »
 
 Les fiches « Inscription Neeva » et « Inscription directe » portent un encadré : où s'inscrire, code Neeva, dates à venir, durée ; et une pastille d'état : **Inscription ouverte** (une session commence après aujourd'hui + le délai de clôture), **Inscriptions closes** (une session approche, délai dépassé), **Prochaines dates à venir** (aucune session à venir). Le délai se règle dans `parametres.csv`, clé `neeva_cloture_jours` (0 : ouverte jusqu'à la veille). L'état se lit par son libellé et son contraste, jamais par une couleur, réservée aux modalités.
+
+L'état est borné par la colonne « Ouvert à l'inscription » (colonne W du classeur, 25/11/2026) : « Oui » → règle des dates ; une session passée l'emporte sur un « Oui » oublié (**Inscriptions closes**) · « Non » → **Inscriptions prochainement** si une session est à venir · vide → règle des dates, sauf une formation Neeva sans code, jamais « ouverte » (**Inscriptions prochainement**).
 
 ### Les douze modalités
 

@@ -22,7 +22,7 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 
 | Fichier | Rôle |
 |---|---|
-| `offre.csv` | Le catalogue, douze colonnes, une ligne par fiche |
+| `offre.csv` | Le catalogue, treize colonnes, une ligne par fiche |
 | `index.html` | La page |
 | `parametres.csv` | `cle;valeur;usage` — adresse du bouton « Ouvrir NEEVA » (`neeva_ouvrir`), sortie de la page le 18/11/2026 ; délai de clôture des inscriptions en jours (`neeva_cloture_jours`, 0 par défaut, 24/11/2026) ; millésime affiché (`millesime`, « 2027/28 », 25/11/2026 : titre, bandeau, « Nouveautés », calendrier, agenda — changer d'année = changer cette cellule ; le mot du DGS n'en dépend pas). Le bouton « Voir le tuto » a été supprimé le même jour, à la demande de la MTAM : ne pas le rétablir. Seules les adresses https sont retenues ; une clé vide ou absente masque le bouton. Aucune adresse en dur dans `index.html` |
 | `outils/extraire_catalogue.py` | Classeur → `offre.csv` (colonnes repérées par leur en-tête) |
@@ -32,14 +32,16 @@ La MTAM — Mission Transversale d'Accompagnement des Managers, DGA Ressources h
 | `fonts/` | Montserrat, latin et latin-ext, graisses 300 à 900, licence SIL OFL (`fonts/OFL.txt`). Hébergée ici depuis le 18/11/2026 |
 | `robots.txt`, `README.md`, `CLAUDE.md` | Indexation, mode d'emploi, ce fichier |
 
+**Classeur (25/11/2026)** : le tableau Excel `T_Actions` a été converti en plage (filtre automatique conservé) pour permettre le partage du classeur ; ne pas en recréer. Le classeur se modifie cellule par cellule dans son XML, jamais réécrit par openpyxl (erreurs à l'ouverture sous Excel 2019).
+
 Cycle : modifier le classeur → extraire → contrôler → déposer → vérifier la page avec `?src=intra34`.
 
 ## 3. `offre.csv` — le schéma
 
-Point-virgule, UTF-8 avec BOM, douze colonnes dans cet ordre (`code_neeva` et `duree` ajoutées le 24/11/2026 ; leur absence dans un fichier antérieur n'est qu'un avertissement) :
+Point-virgule, UTF-8 avec BOM, treize colonnes dans cet ordre (`code_neeva` et `duree` ajoutées le 24/11/2026, `inscription_ouverte` le 25 ; leur absence dans un fichier antérieur n'est qu'un avertissement) :
 
 ```
-id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree
+id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_neeva;duree;inscription_ouverte
 ```
 
 - `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
@@ -48,6 +50,7 @@ id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_
 - `type_lien` — `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` · vide. Synonymes du classeur (table `TLIEN`) : « directe » → `direct`, « Inscription directe » → `inscription`, « Intra34 » → `intra34`, « Plateforme e-learning » → `plateforme`, « Plateforme externe » → `externe` (bouton « Consulter », 24/11/2026). **Une formation « Inscription Neeva » n'a pas de lien** (arbitrage MTAM du 24/11/2026 : Neeva ne s'ouvre pas par une adresse, et l'agenda Intra34 renvoie désormais au catalogue, qui ne renvoie plus aux pages événement) : un lien présent est signalé par le contrôle et n'est pas affiché.
 - `code_neeva` — colonne « Code Neeva » du classeur, première ligne renseignée de la fiche ; affiché dans l'encadré, vide → « communiqué prochainement ».
 - `duree` — colonne « Durée » du classeur (texte libre, réservé aux durées en heures, 30 caractères au plus) ; à défaut, « Nombre de jours par session » mis en forme : 0,5 → « ½ journée », 1 → « 1 jour », 2 → « 2 jours ». Cette colonne numérique reste la référence des bilans en jours : ne pas y écrire d'heures. **Toute autre valeur passe telle quelle** : la page crée un type d'accès à son nom, bouton « Consulter ». Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
+- `inscription_ouverte` — colonne « Ouvert à l'inscription » du classeur (W, après « Type de lien »), Oui/Non, première ligne renseignée de la fiche ; `oui` · `non` · vide, toute autre valeur avertie et écrite vide. Décision de la MTAM, bornée par les dates (voir § 6.6).
 - `nouveau` — `oui` si « Type projet » vaut « Nouveaux projets » ; affiché « *nouveau », sans toucher au titre.
 - `presentation` — 300 caractères au plus. **Textes repris des sources de la MTAM : ne jamais en rédiger.**
 - `date` — dates séparées par ` | `, `à venir`, ou vide (accès permanent, donc hors calendrier).
@@ -92,7 +95,7 @@ Accompagner le changement et les transitions · Accompagner les moments clés de
 3. **Filtres cumulables** : nouveautés, modalité, thématique, axe, accès. Une modalité ou un type d'accès sans fiche n'est pas affiché.
 4. **Classement** : par modalité (défaut), thématique, axe, date, alphabet — avec un intertitre par groupe.
 5. **Les fiches** : pastille de modalité, « *nouveau », titre, présentation (quatre lignes, « Lire la suite » si elle est coupée), thématique cliquable, date (et durée), axe, lien copiable, bouton d'accès.
-6. **Encadré « S'inscrire »** (24/11/2026), pour les types `inscription Neeva` et `inscription` : « Où » (« Neeva (page d'accueil d'Intra34) », en texte, sans lien ; ou « Intra34 » avec le bouton « S'inscrire »), code Neeva, dates à venir, durée. Pastille d'état à côté de la modalité : « Inscription ouverte » (une session commence après aujourd'hui + `neeva_cloture_jours`), « Inscriptions closes », « Prochaines dates à venir ». **Pas de couleur pour l'état** : plein noir, contour, pointillé, et toujours le libellé. Une fiche par module : chaque module d'un parcours a son identifiant ; les sessions d'un même identifiant restent réunies.
+6. **Encadré « S'inscrire »** (24/11/2026), pour les types `inscription Neeva` et `inscription` : « Où » (« Neeva (page d'accueil d'Intra34) », en texte, sans lien ; ou « Intra34 » avec le bouton « S'inscrire »), code Neeva, dates à venir, durée. Pastille d'état à côté de la modalité : « Inscription ouverte » (une session commence après aujourd'hui + `neeva_cloture_jours`), « Inscriptions closes », « Prochaines dates à venir ». « Ouvert à l'inscription » (colonne W du classeur, 25/11/2026) : « Oui » → règle des dates ; une session passée l'emporte sur un « Oui » oublié (**Inscriptions closes**) · « Non » → **Inscriptions prochainement** si une session est à venir · vide → règle des dates, sauf une formation Neeva sans code, jamais « ouverte » (**Inscriptions prochainement**). **Pas de couleur pour l'état** : plein noir, contour, pointillé, et toujours le libellé. Une fiche par module : chaque module d'un parcours a son identifiant ; les sessions d'un même identifiant restent réunies.
 
 **Vue « Le calendrier »** : sessions à venir par mois, avec présentation et invitation d'agenda (`.ics`) ; puis « Programmation en cours », par modalité ; puis les sessions passées, **repliées** (`CAL_PASSE = false`).
 
