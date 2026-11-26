@@ -8,7 +8,7 @@ Le catalogue en ligne de l'offre d'accompagnement des managers du Département d
 |---|---|---|
 | `index.html` | La page : recherche, filtres, classement, calendrier, filtrage d'accès. Ne contient aucune donnée. | personne, sauf évolution décidée |
 | `offre.csv` | Le catalogue : une ligne par fiche. **Extrait du classeur de pilotage de la MTAM, jamais modifié à la main.** | produit par extraction |
-| `parametres.csv` | Adresse du bouton « Ouvrir NEEVA » du bandeau d'inscription. Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
+| `parametres.csv` | Adresse de Neeva (`neeva_ouvrir` : bouton « Ouvrir Neeva » du bandeau, lien de l'encadré « S'inscrire » et du calendrier) du groupe 360learning des managers (`elearning_managers`) et de la page Intra34 de prise en main de 360learning (`elearning_aide`). Se modifie directement sur GitHub (icône crayon), sans toucher à la page. Une adresse vide masque le bouton. | quand une adresse change |
 | `robots.txt` | Interdiction d'indexation, à la racine du site | non |
 | `fonts/` | Police Montserrat hébergée avec le site (licence libre SIL OFL, `fonts/OFL.txt`) : la page ne fait appel à aucun service tiers | non |
 | `outils/` | Extraction du CSV, contrôle avant mise en ligne, démonstration hors ligne, convertisseur sans installation | à chaque changement de schéma |
@@ -39,7 +39,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 - `offre.csv` reste téléchargeable par qui connaît l'adresse.
 - `robots.txt` et `noindex` sont des **demandes**, que les aspirateurs malveillants ignorent.
 
-**Conséquence : seules douze colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
+**Conséquence : seules quatorze colonnes publiables sortent du classeur.** Ni intervenant, ni référent, ni remarque, ni salle, ni effectif. Le contrôle refuse toute colonne supplémentaire.
 
 ## Mettre à jour le catalogue
 
@@ -50,7 +50,7 @@ Tout autre visiteur reçoit une page de refus. Les boutons « Copier le lien de 
 
 Une valeur de liste renommée dans le classeur ne bloque ni le convertisseur ni la page : une modalité inconnue est rangée sous « Autres actions », un axe illisible sous « Transverse », un type de lien inconnu reçoit un bouton « Consulter » à son nom. Le convertisseur le signale par un avertissement. Seuls bloquent : une colonne manquante, un identifiant vide ou en double, un lien non https, une date illisible.
 
-## Les douze colonnes de `offre.csv`
+## Les quatorze colonnes de `offre.csv`
 
 Séparateur point-virgule, encodage UTF-8 avec BOM.
 
@@ -63,15 +63,19 @@ Séparateur point-virgule, encodage UTF-8 avec BOM.
 | `axe` | étiquette d'axe | `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse` |
 | `thematiques` | thématique de l'action (une seule) | l'un des dix-huit libellés |
 | `lien` | adresse de la ressource | URL en https, ou vide |
-| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` — vide si pas de lien ; « directe », saisi dans le classeur, est écrit `direct`, « Plateforme externe » est écrit `externe`. **Une formation Neeva n'a pas de lien** : Neeva ne s'ouvre pas par une adresse |
+| `type_lien` | libellé du bouton | `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` — vide si pas de lien ; « directe », saisi dans le classeur, est écrit `direct`, « Plateforme externe » est écrit `externe`. **Une formation Neeva n'a pas de lien propre** : son encadré renvoie à Neeva, dont l'adresse est dans `parametres.csv` |
 | `nouveau` | mention « *nouveau » | `oui` ou vide |
 | `presentation` | présentation courte affichée sur la fiche | 300 caractères au plus, ou vide |
 | `code_neeva` | code à chercher dans Neeva, affiché dans l'encadré « S'inscrire » | texte, ou vide (« communiqué prochainement ») |
 | `duree` | durée d'une session | « 1 h 30 » (colonne « Durée » du classeur, pour les durées en heures), sinon déduite du nombre de jours : « ½ journée », « 2 jours » ; ou vide |
+| `inscription_ouverte` | décision de la MTAM sur l'ouverture des inscriptions (encadré « S'inscrire ») | `oui` · `non` · vide |
+| `fso` | formation statutaire obligatoire : pastille « Obligatoire (FSO) » et filtre | `oui` · vide |
 
 ### L'encadré « S'inscrire »
 
 Les fiches « Inscription Neeva » et « Inscription directe » portent un encadré : où s'inscrire, code Neeva, dates à venir, durée ; et une pastille d'état : **Inscription ouverte** (une session commence après aujourd'hui + le délai de clôture), **Inscriptions closes** (une session approche, délai dépassé), **Prochaines dates à venir** (aucune session à venir). Le délai se règle dans `parametres.csv`, clé `neeva_cloture_jours` (0 : ouverte jusqu'à la veille). L'état se lit par son libellé et son contraste, jamais par une couleur, réservée aux modalités.
+
+L'état est borné par la colonne « Ouvert à l'inscription » (colonne W du classeur, 25/11/2026) : « Oui » → règle des dates ; une session passée l'emporte sur un « Oui » oublié (**Inscriptions closes**) · « Non » → **Inscriptions prochainement** si une session est à venir · vide → règle des dates, sauf une formation Neeva sans code, jamais « ouverte » (**Inscriptions prochainement**).
 
 ### Les douze modalités
 
