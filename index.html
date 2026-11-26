@@ -435,9 +435,10 @@ a{color:var(--prune)}
 
 <nav class="vues" aria-label="Vues du catalogue">
   <div class="wrap vues-in" role="tablist">
+    <button type="button" id="v-pres" role="tab" aria-selected="false">Présentation par le DGS</button>
+    <button type="button" id="v-axes" role="tab" aria-selected="false">Les 3 axes de Manag'Hérault</button>
     <button type="button" id="v-cat" role="tab" aria-selected="true">Les ressources</button>
     <button type="button" id="v-cal" role="tab" aria-selected="false">Le calendrier</button>
-    <button type="button" id="v-pres" role="tab" aria-selected="false">Présentation par le DGS</button>
   </div>
 </nav>
 
@@ -506,6 +507,11 @@ a{color:var(--prune)}
     <p class="mot-sign"><strong>Dominique Jaumard</strong><br>Directeur général des services</p>
   </div>
 
+</section>
+
+<!-- Les 3 axes : vue distincte depuis le 26/11/2026 (demande de la direction) ;
+     les liens du mot du DGS y conduisent. -->
+<section class="wrap pres-page" id="vue-axes" hidden aria-labelledby="axes-titre">
   <div class="cal-head axes-tete">
     <h2 id="axes-titre">Les 3 axes de Manag'Hérault</h2>
     <p>Chaque ressource du catalogue est rattachée à un ou plusieurs axes. Pour chacun : sa finalité, ses objectifs, et l'accès direct aux ressources correspondantes.</p>
@@ -658,8 +664,8 @@ const axeCourt = ax => ax[0] === "T" ? "Transverse" : (ax.length > 1 ? "Axes "+a
 /* Entrées par situation. Les cinq premières appellent des thématiques par leur
    libellé exact : renommer une thématique dans le classeur casse le raccourci. */
 const SITS = [
-  {l:"Je reprends une équipe", th:["Développer un management humain et responsable",
-     "Accompagner les moments clés de la vie d'une équipe","Affirmer sa posture de manager"]},
+  {l:"J'anime mon équipe", th:["Animer des réunions et des collectifs de travail",
+     "Mobiliser et faire vivre les collectifs","Communiquer et donner du feedback"]},
   {l:"J'ai un conflit dans mon équipe", th:["Prévenir et gérer les tensions et les conflits",
      "Prévenir les violences, discriminations et harcèlements"]},
   {l:"Je recrute et j'intègre", th:["Recruter et intégrer",
@@ -1180,7 +1186,7 @@ function majCalendrier(){
 
 /* ─── bascule entre les deux vues ─────────────────────────────────────────── */
 let VUE = "cat";
-const VUES = {cat:"v-cat", cal:"v-cal", pres:"v-pres"};
+const VUES = {pres:"v-pres", axes:"v-axes", cat:"v-cat", cal:"v-cal"};
 function montreVue(v, pousseUrl){
   if(!VUES[v]) v = "cat";
   VUE = v;
@@ -1188,9 +1194,10 @@ function montreVue(v, pousseUrl){
   document.querySelector(".console").hidden = v !== "cat";
   $("calendrier").hidden = v !== "cal";
   $("vue-pres").hidden = v !== "pres";
+  $("vue-axes").hidden = v !== "axes";
   Object.keys(VUES).forEach(k => $(VUES[k]).setAttribute("aria-selected", String(k === v)));
   if(v === "cal") majCalendrier();
-  else if(v === "pres") majAxes();
+  else if(v === "axes") majAxes();
   else if(v === "cat") mesurePres();
   if(pousseUrl){
     history.replaceState(null,"", adresse(false));
@@ -1206,6 +1213,12 @@ function majAxes(){
 }
 document.querySelectorAll(".axe-voir").forEach(b => b.addEventListener("click", () => {
   toutEffacer(); S.a.add(b.dataset.axe); render(); montreVue("cat", true);
+}));
+/* liens du mot du DGS vers un axe : ouvrent la vue « Les 3 axes » sur la carte */
+document.querySelectorAll('.mot-axes a[href^="#axe-"]').forEach(a => a.addEventListener("click", e => {
+  e.preventDefault(); montreVue("axes", false);
+  history.replaceState(null,"", adresse(false) + a.getAttribute("href"));
+  const c = document.querySelector(a.getAttribute("href")); if(c) c.scrollIntoView({behavior:"smooth", block:"start"});
 }));
 document.querySelectorAll("[data-vue]").forEach(b => b.addEventListener("click", () => montreVue(b.dataset.vue, true)));
 Object.keys(VUES).forEach(k => $(VUES[k]).addEventListener("click", () => montreVue(k, true)));

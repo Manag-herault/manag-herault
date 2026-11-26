@@ -37,8 +37,8 @@ THEMES = ["Accompagner le changement et les transitions", "Accompagner les momen
   "Recruter et intégrer", "Ressources et accompagnements permanents"]
 # Thématiques appelées par cinq boutons « situation » d'index.html : un renommage les casse.
 SITUATIONS = {
-  "Je reprends une équipe": ["Développer un management humain et responsable",
-      "Accompagner les moments clés de la vie d'une équipe", "Affirmer sa posture de manager"],
+  "J'anime mon équipe": ["Animer des réunions et des collectifs de travail",
+      "Mobiliser et faire vivre les collectifs", "Communiquer et donner du feedback"],
   "J'ai un conflit dans mon équipe": ["Prévenir et gérer les tensions et les conflits",
       "Prévenir les violences, discriminations et harcèlements"],
   "Je recrute et j'intègre": ["Recruter et intégrer", "Accompagner les moments clés de la vie d'une équipe"],
