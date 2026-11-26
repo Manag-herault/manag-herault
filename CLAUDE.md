@@ -46,7 +46,7 @@ id;titre;modalite;date;axe;thematiques;lien;type_lien;nouveau;presentation;code_
 
 - `modalite` — douze libellés, ceux de la feuille Listes du classeur, sans table de correspondance : Formation · Formation e-learning · Parcours Hérault Managers · Atelier d'échange de pratiques · Guide / fiche boussole · Lundi RH · Lundi RH Replay · Outil'thèque · Ressources · #Managers · Webinaire · Autres. L'ancienne appellation « Atelier d'échange de pratiques » est encore lue par la page et signalée par le contrôle.
 - `axe` — `1` · `2` · `3` · `1 et 2` · `1 et 3` · `2 et 3` · `Transverse`.
-- `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-huit libellés.
+- `thematiques` — **une seule par action** (arbitrage du 11 novembre), parmi dix-sept libellés.
 - `type_lien` — `direct` · `inscription` · `inscription Neeva` · `intra34` · `plateforme` · `externe` · `generique` · vide. Synonymes du classeur (table `TLIEN`) : « directe » → `direct`, « Inscription directe » → `inscription`, « Intra34 » → `intra34`, « Plateforme e-learning » → `plateforme`, « Plateforme externe » → `externe` (bouton « Consulter », 24/11/2026). **Une formation « Inscription Neeva » n'a pas de lien propre** (arbitrage MTAM du 24/11/2026 : l'agenda Intra34 renvoie au catalogue, qui ne renvoie plus aux pages événement) : un lien présent est signalé par le contrôle et n'est pas affiché. Depuis le 26/11/2026, l'encadré et le calendrier renvoient à Neeva par `neeva_ouvrir` (`parametres.csv`).
 - `code_neeva` — colonne « Code Neeva » du classeur, première ligne renseignée de la fiche ; affiché dans l'encadré, vide → « communiqué prochainement ».
 - `duree` — colonne « Durée » du classeur (texte libre, réservé aux durées en heures, 30 caractères au plus) ; à défaut, « Nombre de jours par session » mis en forme : 0,5 → « ½ journée », 1 → « 1 jour », 2 → « 2 jours ». Cette colonne numérique reste la référence des bilans en jours : ne pas y écrire d'heures. **Toute autre valeur passe telle quelle** : la page crée un type d'accès à son nom, bouton « Consulter ». Dans le classeur, « directe » (valeur de la liste déroulante depuis le 18/11/2026) est admis et écrit `direct` dans `offre.csv` (table `TLIEN` de `extraire_catalogue.py` et de `convertisseur.html`).
@@ -79,11 +79,13 @@ Colonnes supprimées, à ne pas rétablir : `effort`, `disponibilite` (8 novembr
 
 Mot pour mot.
 
-## 5. Les dix-huit thématiques
+## 5. Les dix-sept thématiques
 
-Accompagner le changement et les transitions · Accompagner les moments clés de la vie d'une équipe · Adapter ses pratiques aux nouvelles organisations du travail · Affirmer sa posture de manager · Animer des réunions et des collectifs de travail · Communiquer et donner du feedback · Développer les compétences et accompagner les parcours · Développer un management humain et responsable · Être manager, acteur RH · Exercer ses responsabilités et sécuriser ses pratiques · Mobiliser et faire vivre les collectifs · Organiser son temps, déléguer et responsabiliser · Piloter l'activité et les projets · Piloter les compétences avec les outils RH · Prévenir et gérer les tensions et les conflits · Prévenir les violences, discriminations et harcèlements · Recruter et intégrer · Ressources et accompagnements permanents
+Accompagner le changement et les transitions · Accompagner les moments clés de la vie d'une équipe · Adapter ses pratiques aux nouvelles organisations du travail · Animer des réunions et des collectifs de travail · Communiquer et donner du feedback · Développer les compétences et accompagner les parcours · Développer sa posture de manager · Être manager, acteur RH · Exercer ses responsabilités et sécuriser ses pratiques · Mobiliser et faire vivre les collectifs · Organiser son temps, déléguer et responsabiliser · Piloter l'activité et les projets · Piloter les compétences avec les outils RH · Prévenir et gérer les tensions et les conflits · Prévenir les violences, discriminations et harcèlements · Recruter et intégrer · Ressources et accompagnements permanents
 
-**Onze de ces libellés sont câblés dans `index.html`** (constante `SITS`) et dans `outils/controle_csv.py` (`SITUATIONS`) : cinq boutons « situation » les appellent. Renommer une thématique se répercute dans les deux fichiers, dans le même commit.
+Arbitrage du 26/11/2026 : « Affirmer sa posture de manager » renommée « Développer sa posture de manager » ; « Développer un management humain et responsable » supprimée (trop proche de l'axe 1), ses fiches réparties entre posture, collectifs et feedback, dans le classeur.
+
+**Onze de ces libellés sont câblés dans `index.html`** (constante `SITS`), dans `outils/controle_csv.py` et dans `outils/convertisseur.html` (`THEMES`, `SITUATIONS`) : six boutons « situation » les appellent. Renommer une thématique se répercute dans les deux fichiers, dans le même commit.
 
 ## 6. Comment la page est construite
 
@@ -91,7 +93,7 @@ Accompagner le changement et les transitions · Accompagner les moments clés de
 
 **Vue « Les ressources »**
 
-1. **Sept entrées par situation** : cinq par thématiques (« J'anime mon équipe », qui remplace « Je reprends une équipe » le 26/11/2026, couvre « Animer des réunions et des collectifs de travail », « Mobiliser et faire vivre les collectifs » et « Communiquer et donner du feedback » ; « Je mène mes entretiens » couvre « Être manager, acteur RH » et, depuis le 26/11/2026, « Piloter les compétences avec les outils RH »), « Je me forme » par les trois modalités de formation, « Les nouveautés 2027/28 » par la colonne `nouveau`.
+1. **Sept entrées par situation** : six par thématiques (« Je développe ma posture de manager », 26/11/2026, couvre « Développer sa posture de manager » ; « J'anime mon équipe », qui remplace « Je reprends une équipe » le 26/11/2026, couvre « Animer des réunions et des collectifs de travail », « Mobiliser et faire vivre les collectifs » et « Communiquer et donner du feedback » ; « Je mène mes entretiens » couvre « Être manager, acteur RH » et, depuis le 26/11/2026, « Piloter les compétences avec les outils RH »), « Les nouveautés 2027/28 » par la colonne `nouveau`.
 2. **Recherche** : tous les mots saisis doivent figurer dans la fiche (titre, présentation, thématique, modalité, axe), sans tenir compte des accents ni d'un pluriel ; les mots trouvés sont surlignés ; les titres qui correspondent passent devant.
 3. **Filtres cumulables** : nouveautés, formations obligatoires (FSO), modalité, thématique, axe, accès. Une modalité ou un type d'accès sans fiche n'est pas affiché.
 4. **Classement** : par modalité (défaut), thématique, axe, date, alphabet — avec un intertitre par groupe.

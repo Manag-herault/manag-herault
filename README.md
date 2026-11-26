@@ -101,7 +101,7 @@ L'extraction applique trois règles : les dates saisies sortent telles quelles (
 
 ## Les sept raccourcis de l'en-tête
 
-Cinq pointent vers des **libellés de thématiques**, inscrits dans `index.html` : renommer une thématique dans le classeur impose de mettre la page à jour dans le même dépôt. « Je me forme » pointe vers les trois modalités de formation ; « Les nouveautés 2027/28 » vers la colonne `nouveau`.
+Six pointent vers des **libellés de thématiques**, inscrits dans `index.html` : renommer une thématique dans le classeur impose de mettre la page à jour dans le même dépôt. « Les nouveautés 2027/28 » pointe vers la colonne `nouveau`. « Je me forme » a été retiré le 26/11/2026 (il prêtait à confusion).
 
 ## Adresses pré-filtrées
 
