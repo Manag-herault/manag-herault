@@ -109,12 +109,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 <script>
 "use strict";
 /* ---- Règles de conversion : transposition de outils/extraire_catalogue.py ---- */
-var SORTIE=["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","code_neeva","duree","inscription_ouverte"];
+var SORTIE=["id","titre","modalite","date","axe","thematiques","lien","type_lien","nouveau","presentation","code_neeva","duree"];
 var ENTETES=[["identifiant","id"],["intitule de l'action","titre"],["axe","axe"],["thematique","th"],
  ["modalite de mise en oeuvre","mod"],["type projet","type"],["presentation courte","pres"],
  ["date de debut","debut"],["date (1re session)","debut"],["date de fin","fin"],
  ["etat d'avancement","etat"],["publier au catalogue","pub"],["lien","lien"],["type de lien","tlien"],
- ["code neeva","code"],["duree","duree"],["ouvert a l'inscription","ouv"],["nombre de jours par session","jours"]];
+ ["code neeva","code"],["duree","duree"],["nombre de jours par session","jours"]];
 var PREFIXES=["presentation courte","duree","code neeva"]; /* en-têtes reconnus par leur début */
 /* Nombre de jours par session -> libellé affiché ; vide si illisible ou nul (comme jours_en_texte) */
 function joursEnTexte(v){
@@ -197,7 +197,7 @@ function extraire(lignes,premiere){
     if(!f){
       f=fiches[i]={id:i,titre:txt(r,"titre"),mod:txt(r,"mod"),axe:txt(r,"axe"),th:txt(r,"th"),lien:txt(r,"lien"),
         tlien:txt(r,"tlien"),type:txt(r,"type"),pres:txt(r,"pres"),pub:cle(txt(r,"pub"))==="oui",
-        code:txt(r,"code"),duree:txt(r,"duree"),jours:txt(r,"jours"),ouv:txt(r,"ouv"),
+        code:txt(r,"code"),duree:txt(r,"duree"),jours:txt(r,"jours"),
         dates:{},etats:[],ligne:n};
       ordre.push(i);
     }else{
@@ -208,7 +208,7 @@ function extraire(lignes,premiere){
       if(!f.lien&&txt(r,"lien")){f.lien=txt(r,"lien");f.tlien=txt(r,"tlien");}
       if(!f.pres&&txt(r,"pres")) f.pres=txt(r,"pres");
       if(txt(r,"code")&&f.code&&txt(r,"code")!==f.code) avert.push("L"+n+" « "+f.titre+" » : code Neeva « "+txt(r,"code")+" » différent de la ligne "+f.ligne+" ; celui de la ligne "+f.ligne+" est retenu.");
-      ["code","duree","jours","ouv"].forEach(function(c){if(!f[c]&&txt(r,c)) f[c]=txt(r,c);});
+      ["code","duree","jours"].forEach(function(c){if(!f[c]&&txt(r,c)) f[c]=txt(r,c);});
       f.pub=f.pub||cle(txt(r,"pub"))==="oui";
     }
     var etat=txt(r,"etat");f.etats.push(etat);
@@ -230,9 +230,7 @@ function extraire(lignes,premiere){
     if(ds.length) date=ds.join(" | ");
     else if(f.etats.length&&f.etats.every(function(e){return cle(e)==="deploye";})) date="";
     else date="à venir";
-    var ouv=cle(f.ouv);
-    if(ouv!==""&&ouv!=="oui"&&ouv!=="non"){avert.push("L"+f.ligne+" « "+f.titre+" » : « Ouvert à l'inscription » = « "+f.ouv+" » — seuls Oui et Non sont lus ; traité comme vide.");ouv="";}
-    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[cle(f.tlien)]||f.tlien),cle(f.type).indexOf("nouveau")===0?"oui":"",f.pres,f.code,f.duree||joursEnTexte(f.jours),ouv]});
+    rangs.push({ligne:f.ligne,v:[i,f.titre,f.mod,date,f.axe,f.th,f.lien,(TLIEN[cle(f.tlien)]||f.tlien),cle(f.type).indexOf("nouveau")===0?"oui":"",f.pres,f.code,f.duree||joursEnTexte(f.jours)]});
   });
   return {E:E,avert:avert,rangs:rangs,nFiches:ordre.length,nLignes:lignes.length-1};
 }
@@ -305,10 +303,6 @@ function controle(rangs,ancien){
     if(neeva&&u) A.push(L+" : formation Neeva avec un lien ("+u+"). Neeva ne s'ouvre pas par une adresse : vider la cellule « Lien » dans le classeur. La fiche n'affiche pas ce lien.");
     if(k&&!u&&!neeva) A.push(L+" : type_lien « "+k+" » sans lien (affiché « Lien à renseigner »).");
     if(d.code_neeva&&!neeva) A.push(L+" : code Neeva « "+d.code_neeva+" » sur une action qui n'est pas en « Inscription Neeva » : il n'est pas affiché.");
-    var io=d.inscription_ouverte;
-    if(io!==""&&io!=="oui"&&io!=="non") E.push(L+" : inscription_ouverte = « "+io+" » (attendu : oui, non ou vide).");
-    if(io&&k!=="inscription"&&k!=="inscription Neeva") A.push(L+" : « Ouvert à l'inscription » renseigné sur une action sans inscription (type « "+k+" ») : sans effet.");
-    if(io==="oui"&&neeva&&!d.code_neeva) A.push(L+" : formation Neeva « ouverte » sans code Neeva : la page affiche « Inscriptions prochainement » tant que le code manque.");
     if(d.duree.length>DUREE_MAX) A.push(L+" : durée de "+d.duree.length+" caractères ("+DUREE_MAX+" au plus) : « "+d.duree+" ».");
     if(k==="direct"&&/(360learning\.com|hi_2589236\/outils)\/?$/.test(u)) A.push(L+" : lien générique marqué « direct ».");
     var dt=datesCSV(d.date);
