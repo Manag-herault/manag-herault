@@ -130,7 +130,7 @@ Design system « CD34 Formation ». Prune `#C0116F` (blanc dessus) · vert d'eau
 | #Managers | prune 10 %, texte prune |
 | Autres | blanc |
 
-**Logo du Département** : version officielle monochrome prune de la charte (fichier fourni par la MTAM le 25/11/2026), sans liseré ajouté, 152 px de large (taille minimale de la charte : 40 mm). Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` — **ne jamais rétablir Google Fonts**, qui transmet à Google l'adresse IP de chaque manager · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
+**Logo du Département** : version officielle monochrome prune de la charte (fichier fourni par la MTAM le 25/11/2026), sans liseré ajouté, 152 px de large (taille minimale de la charte : 40 mm). Angles droits, sans ombre ni dégradé · Montserrat, servie depuis `fonts/` — **ne jamais rétablir Google Fonts**, qui transmet à Google l'adresse IP de chaque manager · graisse légère (300) proscrite et texte courant à 16 px (corps), 14 à 14,5 px dans les fiches, rapprochés d'Intra34 (26/11/2026, demande de la MTAM) · texte ferré à gauche · titres en casse de phrase · signature « Solidarité au quotidien, écologie en actions » et « herault.fr » · thème clair unique. Les six couleurs managériales sont un référentiel distinct et n'apparaissent que dans le bandeau. **Ne pas confondre avec `DGA_Code_couleurs.pdf`** (prune `#B40F64`, hors charte).
 
 ## 8. Le filtrage d'accès — et comment tester
 
